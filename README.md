@@ -4,7 +4,7 @@
 
 
 # FBBL - File-Based BKW for LWE 
-[![Main Branch](https://img.shields.io/badge/-main:-gray.svg)](https://github.com/FBBL/fbbl/tree/main)&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.com/FBBL/fbbl.svg?branch=master)](https://travis-ci.com/FBBL/fbbl)
+[![Main Branch](https://img.shields.io/badge/-main:-gray.svg)](https://github.com/FBBL/fbbl/tree/main)&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.com/FBBL/fbbl.svg?token=xdMAmm6EEEu8xxxUqE6x&branch=master)](https://travis-ci.com/FBBL/fbbl)
 
 **FBBL** (File-Based BKW for LWE) is a library that implements the [Blum-Kalai-Wasserman](https://arxiv.org/pdf/cs/0010022.pdf) (**BKW**) algorithm for solving relatively large LWE instances. It is part of the outcome of the research work presented with the paper [Making the BKW Algorithm Practical for LWE]() by Alessandro Budroni, Qian Guo, Thomas Johansson, Erik Mårtensson and Paul Stankovski Wagner.
 

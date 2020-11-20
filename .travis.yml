@@ -28,7 +28,7 @@ compiler:
 script: 
   - cd ${TRAVIS_BUILD_DIR}
   - mkdir target && cd target
-  - cmake -D CMAKE_BUILD_TYPE=Coverage .. && make && make test
+  - cmake -D CMAKE_BUILD_TYPE=Coverage .. && make && make test && make coverage
 
 after_success:
   - coveralls-lcov ${TRAVIS_BUILD_DIR}/target/coverage/coverage.info
