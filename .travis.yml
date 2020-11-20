@@ -5,6 +5,7 @@ sudo: required
 install:
   - gem install coveralls-lcov
   - sudo apt-get install cmake
+  - sudo apt-get install -y lcov
   - wget http://fftw.org/fftw-3.3.8.tar.gz
   - tar -xf fftw-3.3.8.tar.gz
   - cd fftw-3.3.8/
