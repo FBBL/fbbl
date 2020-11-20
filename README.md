@@ -1,10 +1,7 @@
-
-
-
-
-
 # FBBL - File-Based BKW for LWE 
-[![Master Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/FBBL/fbbl/tree/master)&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.com/FBBL/fbbl.svg?token=xdMAmm6EEEu8xxxUqE6x&branch=master)](https://travis-ci.com/FBBL/fbbl) [![Coverage Status](https://coveralls.io/repos/github/FBBL/fbbl/badge.svg?branch=master)](https://coveralls.io/github/FBBL/fbbl?branch=master)
+[![Master Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/FBBL/fbbl/tree/master) [![Build Status](https://travis-ci.com/FBBL/fbbl.svg?token=xdMAmm6EEEu8xxxUqE6x&branch=master)](https://travis-ci.com/FBBL/fbbl) [![Coverage Status](https://coveralls.io/repos/github/FBBL/fbbl/badge.svg?branch=master)](https://coveralls.io/github/FBBL/fbbl?branch=master)
+
+[![Develop Branch](https://img.shields.io/badge/-develop:-gray.svg)](https://github.com/FBBL/fbbl/tree/develop) [![Build Status](https://travis-ci.com/FBBL/fbbl.svg?branch=develop)](https://travis-ci.com/FBBL/fbbl) [![Coverage Status](https://coveralls.io/repos/github/FBBL/fbbl/badge.svg?branch=develop)](https://coveralls.io/github/FBBL/fbbl?branch=develop)
 
 **FBBL** (File-Based BKW for LWE) is a library that implements the [Blum-Kalai-Wasserman](https://arxiv.org/pdf/cs/0010022.pdf) (**BKW**) algorithm for solving relatively large LWE instances. It is part of the outcome of the research work presented with the paper [Making the BKW Algorithm Practical for LWE]() by Alessandro Budroni, Qian Guo, Thomas Johansson, Erik Mårtensson and Paul Stankovski Wagner.
 
@@ -128,4 +125,5 @@ gcc example.c -I your_installation_path/include -L your_installation_path/lib -f
 - more tests
 - code documentation
 
-Pull requests are always welcome!
+## Contributions 
+Contributions are always welcome! Fork the repository and make a pull requests to the develop branch.
