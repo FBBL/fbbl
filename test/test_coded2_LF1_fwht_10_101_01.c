@@ -49,7 +49,7 @@ int main()
 //  u64 totalNumInitialSamples = 1000000000; /* 1 billion */
 //  u64 totalNumInitialSamples = 100000000; /* 100 million */
 //  u64 totalNumInitialSamples = 1000000; /* 1 million */
-    u64 totalNumInitialSamples = 100000;
+    u64 totalNumInitialSamples = 120000;
 
     time_t start = time(NULL);
     srand(time(NULL));
