@@ -1,0 +1,101 @@
+/*  This file is part of FBBL (File-Based BKW for LWE).
+ *
+ *  FBBL is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  FBBL is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Nome-Programma.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+#ifndef LWE_INSTANCE_H
+#define LWE_INSTANCE_H
+#include "assert_utils.h"
+#include "random_utils.h"
+
+/* max number of rows */
+#define MAX_N ${MAX_N}
+
+typedef struct
+{
+    short a[MAX_N];
+    u64 hash; // for speeding up column equality test
+} bkwColumn;
+
+//#define COLUMN_SIZE_IN_BYTES (sizeof(bkwColumn))
+
+// struct for a simple LWE sample
+typedef struct
+{
+    bkwColumn col;
+    short error; /* superfluous, for verification of correctness only */
+    short sumWithError; // sum(a_i * s_i) + error
+} lweSample;
+
+int chi(double sigma, rand_ctx *rnd);
+
+u64 bkwColumnComputeHash(lweSample *sample, int n, int startRow);
+void printColumn(bkwColumn *col, int n);
+void printSample(lweSample *sample, int n);
+int columnIsZero(lweSample *sample, int n);
+
+#define LWE_SAMPLE_SIZE_IN_BYTES (sizeof(lweSample))
+
+static inline int columnValue(lweSample *sample, int i)
+{
+    ASSERT(0 <= i && i < MAX_N, "Index error!\n");
+    return sample->col.a[i];
+}
+static inline int columnValueSigned(lweSample *sample, int i, int q)
+{
+    short a = columnValue(sample, i);
+    return a <= q/2 ? a : a - q;
+}
+static inline int error(lweSample *sample)
+{
+    return sample->error;
+}
+static inline int sumWithError(lweSample *sample)
+{
+    return sample->sumWithError;
+}
+static inline u64 columnHash(lweSample *sample)
+{
+    return sample->col.hash;
+}
+
+typedef lweSample *(*newEmptySampleFunction)();
+typedef lweSample *(*newRandomSampleFunction)(int n, int q, double sigma, rand_ctx *rnd, short *s);
+typedef void (*newInPlaceRandomSampleFunction)(lweSample *sample, int n, int q, double sigma, rand_ctx *rnd, short *s);
+typedef void (*freeSampleFunction)(lweSample *sample);
+
+typedef struct
+{
+    int n;
+    int q;
+    double alpha;
+    double sigma;
+    short s[MAX_N];
+    /* start: initial transform */
+    short **A;
+    short **A_inverse;
+    short *b;
+    /* end: initial transform */
+    rand_ctx rnd;
+    newEmptySampleFunction newEmptySample;
+    newRandomSampleFunction newRandomSample;
+    newInPlaceRandomSampleFunction newInPlaceRandomSample;
+    freeSampleFunction freeSample;
+} lweInstance;
+
+void lweInit(lweInstance *lwe, int n, int q, double alpha);
+void lweInstanceAllocateLinearTransformationMatrices(lweInstance *lwe); /* optional storage structure for linear transformation matrices */
+void lweDestroy(lweInstance *lwe);
+
+#endif

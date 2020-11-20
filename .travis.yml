@@ -1,0 +1,34 @@
+#travis configuration for coverage testing
+language: c
+sudo: required
+
+install:
+  - gem install coveralls-lcov
+  - sudo apt-get install cmake
+  - wget http://fftw.org/fftw-3.3.8.tar.gz
+  - tar -xf fftw-3.3.8.tar.gz
+  - cd fftw-3.3.8/
+  - ./configure 
+  - make
+  - sudo make install 
+  - make clean
+  - ./configure --enable-float 
+  - make 
+  - sudo make install
+  - make clean
+  - ./configure --enable-long-double 
+  - make 
+  - sudo make install
+
+# Compiler selection
+compiler:
+  - gcc
+
+# Build steps
+script: 
+  - cd ${TRAVIS_BUILD_DIR}
+  - mkdir target && cd target
+  - cmake -D CMAKE_BUILD_TYPE=Coverage .. && make && make test
+
+after_success:
+  - coveralls-lcov ${TRAVIS_BUILD_DIR}/target/coverage/coverage.info

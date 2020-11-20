@@ -1,0 +1,74 @@
+/*  This file is part of FBBL (File-Based BKW for LWE).
+ *
+ *  FBBL is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  FBBL is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Nome-Programma.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+#ifndef CONFIG_BKW_H
+#define CONFIG_BKW_H
+
+/* determines how full the storage writer needs to be for sample generation to be aborted. */
+#define EARLY_ABORT_LOAD_LIMIT_PERCENTAGE ${EARLY_ABORT_LOAD_LIMIT_PERCENTAGE}
+
+/* Short explanation:
+   The storage writer cache is flushed to file when it is "full enough",
+   as defined by the macro below.
+
+   Long explanation:
+   The unsorted samples are read sequentially from the source file
+   and are then written to a destination file using a storage writer,
+   which sorts the samples into their corresponding category. The precise
+   destination category for a given sample depends on the sample itself
+   and sorting parameters (how sorting is performed).
+   If this sorting behaves well, the process can be modeled as a coupon
+   collector's problem.
+   The storage writer has a cache buffer (RAM) into which the inserted
+   samples are written. The buffer is typically much smaller than
+   the storage available on file. That is, categories on file typically
+   hold more samples than the corresponding category storage in the cache
+   buffer. Every time the storage writer is flushed, the cached samples
+   are written into (added) to file. This entails one sequential read/write
+   across the entire full-size sample file. If you have many samples, this
+   will take some time.
+   At the expense of discarding a few samples (that over-fill the cache
+   buffer categories, but would potentially fit within the category storage
+   on file), we may improve running time by reducing the amount of flushing
+   that we perform.
+   If sorting behaves reasonably well, the first cache category may be filled
+   at a storage writer cache load of about 5% (heavily depends on problem
+   parameters, of course).
+   */
+#define MIN_STORAGE_WRITER_CACHE_LOAD_BEFORE_FLUSH ${MIN_STORAGE_WRITER_CACHE_LOAD_BEFORE_FLUSH}
+
+/* This macro can be used to reduces dependency between samples.
+   In this implementation, new samples are produced as categories are traversed and processed sequentially.
+   When the desired amount of samples have been produced, category traversal halts.
+
+   This macro is used to determine how many samples to produce from each category (or category pair)
+   in order to spread (parent) sample usage over all categories, rather than using all
+   samples produced by the first few categories and none by the last.
+   The macro determines how many percent of the categories that should be
+   used (on average, but note that sample production is slightly over-estimated).
+   In effect, this determines (by an approximate expected value calculation) how
+   many samples that need to be produced by each category (pair).
+
+   Set to 100 (default) if you want samples to be produced from (almost) all categories.
+   Set to lower (say, 5) if you do not want to skew the distribution towards the na�ve implementation
+   of exhausting categories strictly from left to right.
+ */
+#define SAMPLE_DEPENDENCY_SMEARING ${SAMPLE_DEPENDENCY_SMEARING}
+
+/* Keep the number of samples to be somehow constant through the steps */
+#define MAX_NUM_SAMPLES ${MAX_NUM_SAMPLES}
+
+#endif
