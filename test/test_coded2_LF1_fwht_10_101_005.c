@@ -59,7 +59,7 @@ int main()
     int ret;
     int n = 10;
     int q = 101;
-    double alpha = 0.01;
+    double alpha = 0.005;
 
     lweInit(&lwe, n, q, alpha);
 
@@ -67,7 +67,7 @@ int main()
     char originalFolderName[256];
     char sortedFolderName[256];
 
-    sprintf(outputfolder, "%s/test_coded2_LF1_bkw_fwht_10_101_01", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
+    sprintf(outputfolder, "%s/test_coded2_LF1_bkw_fwht_10_101_005", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
     mkdir(outputfolder, 0777);
 
     sprintf(originalFolderName, "%s/original", outputfolder);
