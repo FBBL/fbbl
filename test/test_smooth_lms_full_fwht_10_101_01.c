@@ -321,7 +321,7 @@ int main()
     timeStamp(start);
     printf("Full Secret Found    (");
     for(int i = 0; i<lwe.n; i++)
-        printf("%d ", full_secret[i]);
+        printf("%hi ", full_secret[i]);
     printf(")\n");
 
     sprintf(originalFolderName, "%s/original_0", outputfolder);
@@ -330,7 +330,7 @@ int main()
     timeStamp(start);
     printf("Original Full Secret (");
     for(int i = 0; i<lpn.n; i++)
-        printf("%d ",lwe.s[i]);
+        printf("%hi ",lwe.s[i]);
     printf(")\n\n");
 
     for(int i = 0; i<lwe.n; i++)

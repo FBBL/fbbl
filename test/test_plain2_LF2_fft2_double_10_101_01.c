@@ -285,18 +285,18 @@ int main()
     timeStamp(start);
     printf("correct s\n");
     timeStamp(start);
-    printf("s = (%4d", lwe.s[0]);
+    printf("s = (%hi", lwe.s[0]);
     for (int i=1; i<n; i++)
     {
         if (i % 10 == 0)
         {
             printf(",\n");
             timeStamp(start);
-            printf("    %4d", lwe.s[i]);
+            printf("    %hi", lwe.s[i]);
         }
         else
         {
-            printf(", %4d", lwe.s[i]);
+            printf(", %hi", lwe.s[i]);
         }
     }
     printf(")\n");

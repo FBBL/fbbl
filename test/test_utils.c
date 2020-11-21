@@ -134,7 +134,7 @@ int main()
 	timeStamp(start);printf("Transformed secret s\n(");
     for (int i = 0; i < n; ++i)
     {
-    	printf("%d ", lwe.s[i]);
+    	printf("%hi ", lwe.s[i]);
     }printf(")\n");
 
     /* apply inverse transformation */
@@ -143,13 +143,13 @@ int main()
     timeStamp(start);printf("Original s\n(");
     for (int i = 0; i < n; ++i)
     {
-    	printf("%d ", original_s[i]);
+    	printf("%hi ", original_s[i]);
     }printf(")\n");
 
     timeStamp(start);printf("Computed s\n(");
     for (int i = 0; i < n; ++i)
     {
-    	printf("%d ", s[i]);
+    	printf("%hi ", s[i]);
     }printf(")\n");
 
     for (int i = 0; i < n; ++i)

@@ -325,15 +325,15 @@ int main()
 
     printf("\nFound Solution\n");
     for(int i = 0; i<fwhtPositions; i++)
-        printf("%d ",binary_solution[i]);
+        printf("%hhu ",binary_solution[i]);
     printf("\n");
 
     printf("\nReal Solution\n");
-    int bin;
+    short bin;
     for(int i = zeroPositions; i<zeroPositions+fwhtPositions; i++)
     {
         bin = knownSecret[i] > lwe.q/2 ? (knownSecret[i]%2 +1)%2 : knownSecret[i]%2;
-        printf("%d ", bin);
+        printf("%hi ", bin);
     }
     printf("\n");
 

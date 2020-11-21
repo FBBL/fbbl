@@ -59,7 +59,7 @@ int main()
     int ret;
     int n = 10;
     int q = 101;
-    double alpha = 0.01;
+    double alpha = 0.005;
 
     lweInit(&lwe, n, q, alpha);
 
@@ -218,11 +218,11 @@ int main()
     for(int i = 0; i<solved_positions; i++)
         printf("- ");
     for(int i = 0; i<fwht_positions; i++)
-        printf("%d ",binary_solution[i]);
+        printf("%hhu ",binary_solution[i]);
 
     printf("\nReal Solution\n");
     for(int i = 0; i<lpn.n; i++)
-        printf("%d ",lpn.s[i]);
+        printf("%hi ",lpn.s[i]);
     printf("\n");
 
     for(int i = 0; i<solved_positions; i++)

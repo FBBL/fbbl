@@ -72,7 +72,7 @@ my_add_test(lms_LF2_fwht_10_101_005 "${TEST_DIR}/test_lms_LF2_fwht_10_101_005.c"
 # test_lms3_LF2_fwht_bruteforce1_10_101_005
 my_add_test(lms3_LF2_fwht_bruteforce1_10_101_005 "${TEST_DIR}/test_lms3_LF2_fwht_bruteforce1_10_101_005.c" m fbbl "Test passed")
 # test_lms4_LF2_fwht_bruteforce2_10_101_005
-my_add_test(flms4_LF2_fwht_bruteforce2_10_101_005 "${TEST_DIR}/test_lms4_LF2_fwht_bruteforce2_10_101_005.c" m fbbl "Test passed")
+my_add_test(lms4_LF2_fwht_bruteforce2_10_101_005 "${TEST_DIR}/test_lms4_LF2_fwht_bruteforce2_10_101_005.c" m fbbl "Test passed")
 # test_coded2_LF1_fwht_10_101_01
 my_add_test(coded2_LF1_fwht_10_101_01 "${TEST_DIR}/test_coded2_LF1_fwht_10_101_01.c" m fbbl "Test passed")
 # test_coded2_LF2_fwht_10_101_01

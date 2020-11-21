@@ -232,19 +232,19 @@ int main()
     timeStamp(start);
     printf("Binary Solution Found (");
     for(int i = 0; i<lwe.n-bruteForcePositions; i++)
-        printf("%d ",binary_solution[i]);
+        printf("%hhu ",binary_solution[i]);
     printf("- ");
     for(int i = 0; i<bruteForcePositions; i++)
-        printf("%d ",bf_solution[i]);
+        printf("%hi ",bf_solution[i]);
     printf(")\n");
 
     timeStamp(start);
     printf("Real Binary Solution  (");
     for(int i = 0; i<lwe.n-bruteForcePositions; i++)
-        printf("%d ",real_binary_secret[i]);
+        printf("%hhu ",real_binary_secret[i]);
     printf("- ");
     for(int i = 0; i<bruteForcePositions; i++)
-        printf("%d ",lwe.s[i+zeropositions+fwht_positions]);
+        printf("%hi ",lwe.s[i+zeropositions+fwht_positions]);
     printf(")\n");
 
     for(int i = 0; i<lwe.n-bruteForcePositions; i++)
