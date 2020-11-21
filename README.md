@@ -4,7 +4,7 @@
 
 [![Develop Branch](https://img.shields.io/badge/-develop:-gray.svg)](https://github.com/FBBL/fbbl/tree/develop) [![Build Status](https://travis-ci.com/FBBL/fbbl.svg?branch=develop)](https://travis-ci.com/FBBL/fbbl) [![Coverage Status](https://coveralls.io/repos/github/FBBL/fbbl/badge.svg?branch=develop)](https://coveralls.io/github/FBBL/fbbl?branch=develop)
 
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) [![HitCount](http://hits.dwyl.com/FBBL/fbbl.svg)](http://hits.dwyl.com/FBBL/fbbl)
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) ![GitHub issues](https://img.shields.io/github/issues/FBBL/fbbl) ![GitHub pull requests](https://img.shields.io/github/issues-pr/FBBL/fbbl) ![GitHub repo size](https://img.shields.io/github/repo-size/FBBL/fbbl)
 --------------------------
 <img align="left" width="120" height="120" src="https://avatars0.githubusercontent.com/u/73596601?s=400&u=aacfa85ae5da9ffcf1b2b0c4a077741988f05ec7">
 

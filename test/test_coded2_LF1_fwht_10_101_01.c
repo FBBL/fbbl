@@ -49,7 +49,7 @@ int main()
 //  u64 totalNumInitialSamples = 1000000000; /* 1 billion */
 //  u64 totalNumInitialSamples = 100000000; /* 100 million */
 //  u64 totalNumInitialSamples = 1000000; /* 1 million */
-    u64 totalNumInitialSamples = 120000;
+    u64 totalNumInitialSamples = 100000;
 
     time_t start = time(NULL);
     srand(time(NULL));
@@ -67,7 +67,7 @@ int main()
     char originalFolderName[256];
     char sortedFolderName[256];
 
-    sprintf(outputfolder, "%s/test_coded2_LF1_bkw_fwht_10_101_005", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
+    sprintf(outputfolder, "%s/test_coded2_LF1_bkw_fwht_10_101_01", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
     mkdir(outputfolder, 0777);
 
     sprintf(originalFolderName, "%s/original", outputfolder);
@@ -218,11 +218,11 @@ int main()
     for(int i = 0; i<solved_positions; i++)
         printf("- ");
     for(int i = 0; i<fwht_positions; i++)
-        printf("%d ",binary_solution[i]);
+        printf("%hhu ",binary_solution[i]);
 
     printf("\nReal Solution\n");
     for(int i = 0; i<lpn.n; i++)
-        printf("%d ",lpn.s[i]);
+        printf("%hi ",lpn.s[i]);
     printf("\n");
 
     for(int i = 0; i<solved_positions; i++)
