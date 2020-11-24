@@ -13,7 +13,7 @@
 &nbsp;&nbsp;- **Licence**: [GNU General Public License version 3](https://www.gnu.org/licenses/gpl-3.0.html)\
 &nbsp;&nbsp;- **Link**: https://github.com/FBBL/fbbl\
 
-**FBBL** (File-Based BKW for LWE) is a library that implements the [Blum-Kalai-Wasserman](https://arxiv.org/pdf/cs/0010022.pdf) (**BKW**) algorithm for solving relatively large LWE instances. It is part of the outcome of the research work presented with the paper [Making the BKW Algorithm Practical for LWE]() by Alessandro Budroni, Qian Guo, Thomas Johansson, Erik Mårtensson and Paul Stankovski Wagner.
+**FBBL** (File-Based BKW for LWE) is a library that implements the [Blum-Kalai-Wasserman](https://arxiv.org/pdf/cs/0010022.pdf) (**BKW**) algorithm for solving relatively large LWE instances. It is part of the outcome of the research work presented with the paper [Making the BKW Algorithm Practical for LWE](https://eprint.iacr.org/2020/1467.pdf) by Alessandro Budroni, Qian Guo, Thomas Johansson, Erik Mårtensson and Paul Stankovski Wagner.
 
 The primary characteristic is to use a *file-based memory management* in order to avoid RAM constraints when handling large number of samples. It runs both on UNIX and Windows environments and it has no external dependencies except for [FFTW](http://fftw.org/) for solving Fast Fourier Transforms (FFT).
 
@@ -27,7 +27,7 @@ FBBL supports most of the proposed BKW reduction steps for solving LWE problems,
 - [plain-BKW](https://eprint.iacr.org/2012/636.pdf)
 - [lazy modulus switching](https://eprint.iacr.org/2014/019.pdf) (LMS)
 - [coded-BKW](https://eprint.iacr.org/2016/310.pdf)
-- smooth-LMS
+- [smooth-LMS](https://eprint.iacr.org/2020/1467.pdf)
 
 All the above support both **LF1** and **LF2** combining techniques.
 
