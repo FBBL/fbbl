@@ -115,6 +115,7 @@ int verifyUnsortedSamples(const char *folderName, u64 *numSamplesProcessed, u64 
     FILE *f = fopenSamples(folderName, "rb");
     if (!f)
     {
+        lweDestroy(&lwe);
         return 1;
     }
     while (!feof(f))
@@ -129,6 +130,7 @@ int verifyUnsortedSamples(const char *folderName, u64 *numSamplesProcessed, u64 
     }
     FREE(sampleBuf);
     fclose(f);
+    lweDestroy(&lwe);
     return 0;
 }
 
@@ -161,6 +163,7 @@ int verifySortedSamples(const char *folderName, bkwStepParameters *bkwStepPar, u
         {
             printf("storage reader returned %d on initialize\n", ret);
         }
+        lweDestroy(&lwe);
         return 1;
     }
     ret = storageReaderGetNextAdjacentCategoryPair(&sr, &buf1, &numSamplesInBuf1, &buf2, &numSamplesInBuf2);
@@ -199,6 +202,7 @@ int verifySortedSamples(const char *folderName, bkwStepParameters *bkwStepPar, u
         }
     }
     storageReaderFree(&sr);
+    lweDestroy(&lwe);
     return 0;
 }
 

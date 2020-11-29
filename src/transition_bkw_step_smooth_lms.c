@@ -332,6 +332,7 @@ int transition_bkw_step_smooth_lms(const char *srcFolderName, const char *dstFol
 
     if (sampleInfoFromFile(srcFolderName, srcBkwStepPar, &srcNumCategories, &srcCategoryCapacity, &srcNumTotalSamples, NULL))
     {
+        lweDestroy(&lwe);
         return 1; /* error reading from samples info file */
     }
 
@@ -340,6 +341,7 @@ int transition_bkw_step_smooth_lms(const char *srcFolderName, const char *dstFol
     printf("transition_bkw_step_smooth_lms: num src categories is %s, category capacity is %s, total num src samples is %s (%5.2f%% full)\n", sprintf_u64_delim(nc, srcNumCategories), sprintf_u64_delim(cc, srcCategoryCapacity), sprintf_u64_delim(ns, srcNumTotalSamples), 100*srcNumTotalSamples/(double)(srcNumCategories * srcCategoryCapacity));
     if (srcBkwStepPar->sorting != smoothLMS)
     {
+        lweDestroy(&lwe);
         return 2; /* unexpected sample sorting at src folder */
     }
 
@@ -347,6 +349,7 @@ int transition_bkw_step_smooth_lms(const char *srcFolderName, const char *dstFol
     storageReader sr;
     if (storageReaderInitialize(&sr, srcFolderName))
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("could not initialize storage reader");
         return 3; /* could not initialize storage reader */
     }
@@ -361,6 +364,7 @@ int transition_bkw_step_smooth_lms(const char *srcFolderName, const char *dstFol
     storageWriter sw;
     if (storageWriterInitialize(&sw, dstFolderName, &lwe, dstBkwStepPar, dstCategoryCapacity))
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("could not initialize storage writer");
         return 4; /* could not initialize storage writer */
     }
@@ -369,6 +373,7 @@ int transition_bkw_step_smooth_lms(const char *srcFolderName, const char *dstFol
     /* TODO: move to initialization */
     if (createSumAndDiffTables(lwe.q))
     {
+        lweDestroy(&lwe);
         return 6; /* could not create addition and difference tables */
     }
 
@@ -439,6 +444,7 @@ int transition_bkw_step_smooth_lms(const char *srcFolderName, const char *dstFol
     *numSamplesStored = sw.totalNumSamplesAddedToStorageWriter;
     storageWriterFree(&sw); /* flushes automatically */
     freeSumAndDiffTables();
+    lweDestroy(&lwe);
 
     return 0;
 }

@@ -435,6 +435,7 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
 
     if (sampleInfoFromFile(srcFolderName, srcBkwStepPar, &srcNumCategories, &srcCategoryCapacity, &srcNumTotalSamples, NULL))
     {
+        lweDestroy(&lwe);
         return 1; /* error reading from samples info file */
     }
 
@@ -444,6 +445,7 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
     printf("transition_bkw_step_lms_meta: num src categories is %s, category capacity is %s, total num src samples is %s (%5.2f%% full)\n", sprintf_u64_delim(nc, srcNumCategories), sprintf_u64_delim(cc, srcCategoryCapacity), sprintf_u64_delim(ns, srcNumTotalSamples), 100*srcNumTotalSamples/(double)(srcNumCategories * srcCategoryCapacity));
     if (srcBkwStepPar->sorting != smoothLMS)
     {
+        lweDestroy(&lwe);
         return 2; /* unexpected sample sorting at src folder */
     }
 
@@ -451,6 +453,7 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
     storageReader sr;
     if (storageReaderInitialize(&sr, srcFolderName))
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("could not initialize storage reader");
         return 3; /* could not initialize storage reader */
     }
@@ -461,6 +464,7 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
     FILE *wf = fopenSamples(dstFolderName, "ab");
     if (!wf)
     {
+        lweDestroy(&lwe);
         return -1;
     }
 
@@ -468,6 +472,7 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
     /* TODO: move to initialization */
     if (createSumAndDiffTables(lwe.q))
     {
+        lweDestroy(&lwe);
         return 6; /* could not create addition and difference tables */
     }
 
@@ -495,6 +500,7 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
     }
     else
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("Unsupported number of skipped positions");
         return 7;
     }
@@ -699,8 +705,8 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
     /* close storage handlers */
     storageReaderFree(&sr);
     freeSumAndDiffTables();
-
     fclose(wf);
+    lweDestroy(&lwe);
 
     return 0;
 }

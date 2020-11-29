@@ -53,6 +53,7 @@ int transition_times2_modq(const char *srcFolderName, const char *dstFolderName,
     u64 totNumUnsortedSamples = numSamplesInSampleFile(srcFolderName);
     if (!totNumUnsortedSamples)
     {
+        lweDestroy(&lwe);
         return 2; /* no samples in source file */
     }
     char str[256];
@@ -66,6 +67,7 @@ int transition_times2_modq(const char *srcFolderName, const char *dstFolderName,
     int ret = storageWriterInitialize(&sw, dstFolderName, &lwe, bkwStepPar, categoryCapacityFile);
     if (ret)
     {
+        lweDestroy(&lwe);
         return 100 + ret; /* could not initialize storage writer */
     }
     timeStamp(start);
@@ -75,6 +77,7 @@ int transition_times2_modq(const char *srcFolderName, const char *dstFolderName,
     FILE *f_src = fopenSamples(srcFolderName, "rb");
     if (!f_src)
     {
+        lweDestroy(&lwe);
         if (storageWriterFree(&sw))
         {
             return 3; /* failed to free storage writer */
@@ -87,6 +90,7 @@ int transition_times2_modq(const char *srcFolderName, const char *dstFolderName,
     lweSample *sampleReadBuf = MALLOC(READ_BUFFER_CAPACITY_IN_SAMPLES * LWE_SAMPLE_SIZE_IN_BYTES);
     if (!sampleReadBuf)
     {
+        lweDestroy(&lwe);
         fclose(f_src);
         if (storageWriterFree(&sw))
         {
@@ -168,6 +172,7 @@ int transition_times2_modq(const char *srcFolderName, const char *dstFolderName,
     /* cleanup */
     FREE(sampleReadBuf);
     fclose(f_src);
+    lweDestroy(&lwe);
     ret = storageWriterFree(&sw); /* flushes automatically */
     if (ret)
     {

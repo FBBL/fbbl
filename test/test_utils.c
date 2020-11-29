@@ -46,53 +46,74 @@
 int main()
 {
 
-	time_t start = time(NULL);
+    time_t start = time(NULL);
 
-	// TEST 1
+    // TEST 1
 
-	if(unordered == sortingFromString("unordered")){
-		timeStamp(start);printf("Test on sortingFromString(unordered): success\n");
-	}
-	else {
-		timeStamp(start);printf("Error in sortingFromString(unordered)\n");
-		return -1;
-	}
+    if(unordered == sortingFromString("unordered"))
+    {
+        timeStamp(start);
+        printf("Test on sortingFromString(unordered): success\n");
+    }
+    else
+    {
+        timeStamp(start);
+        printf("Error in sortingFromString(unordered)\n");
+        return -1;
+    }
 
-	if(plainBKW == sortingFromString("Plain BKW")){
-		timeStamp(start);printf("Test on sortingFromString(plainBKW): success\n");
-	}
-	else {
-		timeStamp(start);printf("Error in sortingFromString(Plain BKW)\n");
-		return -1;
-	}
-	if(LMS == sortingFromString("Lazy Modulus Switching (LMS)")){
-		timeStamp(start);printf("Test on sortingFromString(Lazy Modulus Switching (LMS)): success\n");
-	}
-	else {
-		timeStamp(start);printf("Error in sortingFromString(LMS)\n");
-		return -1;
-	}
-	if(smoothLMS == sortingFromString("Smooth LMS")){
-		timeStamp(start);printf("Test on sortingFromString(Smooth LMS): success\n");
-	}
-	else {
-		timeStamp(start);printf("Error in sortingFromString(smoothLMS)\n");
-		return -1;
-	}
-	if(codedBKW == sortingFromString("Coded BKW")){
-		timeStamp(start);printf("Test on sortingFromString(Coded BKW): success\n");
-	}
-	else {
-		timeStamp(start);printf("Error in sortingFromString(Coded BKW)\n");
-		return -1;
-	}
+    if(plainBKW == sortingFromString("Plain BKW"))
+    {
+        timeStamp(start);
+        printf("Test on sortingFromString(plainBKW): success\n");
+    }
+    else
+    {
+        timeStamp(start);
+        printf("Error in sortingFromString(Plain BKW)\n");
+        return -1;
+    }
+    if(LMS == sortingFromString("Lazy Modulus Switching (LMS)"))
+    {
+        timeStamp(start);
+        printf("Test on sortingFromString(Lazy Modulus Switching (LMS)): success\n");
+    }
+    else
+    {
+        timeStamp(start);
+        printf("Error in sortingFromString(LMS)\n");
+        return -1;
+    }
+    if(smoothLMS == sortingFromString("Smooth LMS"))
+    {
+        timeStamp(start);
+        printf("Test on sortingFromString(Smooth LMS): success\n");
+    }
+    else
+    {
+        timeStamp(start);
+        printf("Error in sortingFromString(smoothLMS)\n");
+        return -1;
+    }
+    if(codedBKW == sortingFromString("Coded BKW"))
+    {
+        timeStamp(start);
+        printf("Test on sortingFromString(Coded BKW): success\n");
+    }
+    else
+    {
+        timeStamp(start);
+        printf("Error in sortingFromString(Coded BKW)\n");
+        return -1;
+    }
 
-	// TEST 2
+    // TEST 2
 
-	timeStamp(start); printf("Testing LWE transformations\n");
+    timeStamp(start);
+    printf("Testing LWE transformations\n");
 
-	lweInstance lwe;
-	int n, q, ret;
+    lweInstance lwe;
+    int n, q, ret;
     n = 10;
     q = 101;
     float alpha = 0.01;
@@ -109,10 +130,15 @@ int main()
     u64 totalNumInitialSamples = 100;
 
     ret = tuDarmstadtFileFormatConversionWithErrorChecking(challengeFileName, convertedFolderName, 1, totalNumInitialSamples, start);
-    if (ret == 1){
-    	timeStamp(start); printf("File already exists: %s\n", challengeFileName);
-    } else if (ret != 0 && ret != 1){
-    	timeStamp(start); printf("Error converting filie\n");
+    if (ret == 1)
+    {
+        timeStamp(start);
+        printf("File already exists: %s\n", challengeFileName);
+    }
+    else if (ret != 0 && ret != 1)
+    {
+        timeStamp(start);
+        printf("Error converting filie\n");
     }
 
     int paramsReadError = lweParametersFromFile(&lwe, convertedFolderName);
@@ -126,40 +152,47 @@ int main()
     /* known solution */
     short original_s[] = {64, 36, 0, 23, 66, 62, 40, 15, 3, 43};
     short s[] = {64, 36, 0, 23, 66, 62, 40, 15, 3, 43};
-    
+
     /* apply initial transformation to s */
     transformSecret(&lwe, s);
-	for (int i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         lwe.s[i] = s[i];
 
-	timeStamp(start);printf("Transformed secret s\n(");
+    timeStamp(start);
+    printf("Transformed secret s\n(");
     for (int i = 0; i < n; ++i)
     {
-    	printf("%hi ", lwe.s[i]);
-    }printf(")\n");
+        printf("%hi ", lwe.s[i]);
+    }
+    printf(")\n");
 
     /* apply inverse transformation */
     inverseTransformSecret(&lwe, s);
 
-    timeStamp(start);printf("Original s\n(");
+    timeStamp(start);
+    printf("Original s\n(");
     for (int i = 0; i < n; ++i)
     {
-    	printf("%hi ", original_s[i]);
-    }printf(")\n");
+        printf("%hi ", original_s[i]);
+    }
+    printf(")\n");
 
-    timeStamp(start);printf("Computed s\n(");
+    timeStamp(start);
+    printf("Computed s\n(");
     for (int i = 0; i < n; ++i)
     {
-    	printf("%hi ", s[i]);
-    }printf(")\n");
+        printf("%hi ", s[i]);
+    }
+    printf(")\n");
 
     for (int i = 0; i < n; ++i)
     {
-    	if (original_s[i] != s[i])
-    	{
-    		timeStamp(start);printf("Error in transformation\n");
-    		return 1;
-    	}
+        if (original_s[i] != s[i])
+        {
+            timeStamp(start);
+            printf("Error in transformation\n");
+            return 1;
+        }
     }
 
     // TEST 3 - just to increase coverage...
@@ -167,7 +200,8 @@ int main()
     u8 fakeRandBuf[] = {1,2};
     randomUtilAppendRandomness(&lwe.rnd, fakeRandBuf, 2);
     long double randld = randomUtilLongDouble(&lwe.rnd);
-    timeStamp(start); printf("Long double generated %Lf\n", randld);
+    timeStamp(start);
+    printf("Long double generated %Lf\n", randld);
 
     // TEST 4 - just to increase coverage...
 
@@ -177,9 +211,9 @@ int main()
 
     emptySample = lwe.newEmptySample();
     randomSample = lwe.newRandomSample(n, q, alpha*q, &lwe.rnd, s);
-    lweDestroy(&lwe);
 
-	// TEST 5 - just to increase coverage...
+
+    // TEST 5 - just to increase coverage...
     srand(time(NULL));
     u64 category_index;
     short a[2], b[2];
@@ -187,23 +221,27 @@ int main()
     for (int i = 0; i < 1000; ++i)
     {
         a[0] = rand()%q;
-    	a[1] = rand()%q;
-    	b[0] = a[0];
-    	b[1] = a[1];
-    	category_index = position_values_2_category_index_plain_bkw(q, a);
-    	category_index_2_position_values_plain_bkw(q, category_index, b);
-    	if (a[0] != b[0] || a[1] != b[1])
-    	{
-    		timeStamp(start);printf("Error in position_values_2_category_index_plain_bkw or category_index_2_position_values_plain_bkw\n");
-    		return 1;
-    	}
+        a[1] = rand()%q;
+        b[0] = a[0];
+        b[1] = a[1];
+        category_index = position_values_2_category_index_plain_bkw(q, a);
+        category_index_2_position_values_plain_bkw(q, category_index, b);
+        if (a[0] != b[0] || a[1] != b[1])
+        {
+            timeStamp(start);
+            printf("Error in position_values_2_category_index_plain_bkw or category_index_2_position_values_plain_bkw\n");
+            return 1;
+        }
 
     }
     free_table_plain_bkw_2_positions();
+    lwe.freeSample(emptySample);
+    lwe.freeSample(randomSample);
 
-	timeStamp(start);printf("Test passed\n");
+    lweDestroy(&lwe);
+    timeStamp(start);
+    printf("Test passed\n");
 
-
-	return 0;
+    return 0;
 
 }

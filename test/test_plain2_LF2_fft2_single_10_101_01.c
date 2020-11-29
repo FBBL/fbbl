@@ -259,7 +259,7 @@ int main()
         {
             printf("solving for positions %d to %d...", startIndexForSolving, startIndexForSolving + numSolvablePositions - 1);
         }
-		int ret = solve_fft_search(srcFolderName, solution, numSolvedCoordinates, numSolvablePositions, FFT_SOLVER_SINGLE_PRECISION);
+        int ret = solve_fft_search(srcFolderName, solution, numSolvedCoordinates, numSolvablePositions, FFT_SOLVER_SINGLE_PRECISION);
         printf("done\n");
         if (ret)
         {

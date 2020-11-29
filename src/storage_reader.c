@@ -44,6 +44,7 @@ int storageReaderInitialize(storageReader *sr, const char *srcFolderName)
         bkwStepParameters bkwStepPar;
         if (sampleInfoFromFile(srcFolderName, &bkwStepPar, NULL, NULL, NULL, NULL))
         {
+            lweDestroy(&lwe);
             return 2; /* could not get sample info */
         }
         /* when reading lms-sorted samples we care about c = q/p + 1. */

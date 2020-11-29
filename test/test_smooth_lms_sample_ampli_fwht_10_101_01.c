@@ -303,6 +303,8 @@ int main()
     printf("Deleted folder %s\n", dstFolderName);
 #endif
 
+    lweDestroy(&lwe);
+
     lweParametersFromFile(&lwe, convertedFolderName);
     transformSecret(&lwe, knownSecret);
 
@@ -347,6 +349,8 @@ int main()
         }
     }
 
+    FREE(binary_solution);
+    lweDestroy(&lwe);
     printf("Test passed\n");
 
     return 0;

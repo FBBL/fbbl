@@ -105,7 +105,7 @@ int main()
     int fwht_positions = lwe.n - hybrid_positions;
     int MAX_digits = ceil(log2(4*alpha*q));
 
-    u8 binary_solution[fwht_positions]; //CALLOC(fwht_positions*MAX_digits, sizeof(u8));
+    u8 binary_solution[n]; //CALLOC(fwht_positions*MAX_digits, sizeof(u8));
 
     timeStamp(start);
     printf("Start reduction phase - MAX Number of Iterations %d\n", MAX_digits);

@@ -233,6 +233,8 @@ int main()
             return 1;
         }
     }
+
+    free(binary_solution);
     printf("Test passed\n");
 
     return 0;
