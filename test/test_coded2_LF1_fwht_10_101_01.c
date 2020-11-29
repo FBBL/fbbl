@@ -88,7 +88,7 @@ int main()
         bkwStepPar[i].sorting = codedBKW;
         bkwStepPar[i].startIndex = i == 0 ? 0 : bkwStepPar[i-1].startIndex + bkwStepPar[i-1].numPositions;
         bkwStepPar[i].numPositions = 2;
-        bkwStepPar[i].selection = LF1;
+        bkwStepPar[i].selection = LF2;
         bkwStepPar[i].sortingPar.CodedBKW.ct = blockCode_21;
     }
 
