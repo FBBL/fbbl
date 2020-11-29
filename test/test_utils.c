@@ -38,6 +38,7 @@
 #include "bkw_step_parameters.h"
 #include "random_utils.h"
 #include "transform_secret.h"
+#include "position_values_2_category_index.h"
 
 #define NUM_REDUCTION_STEPS 5
 #define BRUTE_FORCE_POSITIONS 0
@@ -176,10 +177,33 @@ int main()
 
     emptySample = lwe.newEmptySample();
     randomSample = lwe.newRandomSample(n, q, alpha*q, &lwe.rnd, s);
-
-
     lweDestroy(&lwe);
+
+	// TEST 5 - just to increase coverage...
+    srand(time(NULL));
+    u64 category_index;
+    short a[2], b[2];
+
+    for (int i = 0; i < 1000; ++i)
+    {
+        a[0] = rand()%q;
+    	a[1] = rand()%q;
+    	b[0] = a[0];
+    	b[1] = a[1];
+    	category_index = position_values_2_category_index_plain_bkw(q, a);
+    	category_index_2_position_values_plain_bkw(q, category_index, b);
+    	if (a[0] != b[0] || a[1] != b[1])
+    	{
+    		timeStamp(start);printf("Error in position_values_2_category_index_plain_bkw or category_index_2_position_values_plain_bkw\n");
+    		return 1;
+    	}
+
+    }
+    free_table_plain_bkw_2_positions();
+
 	timeStamp(start);printf("Test passed\n");
+
+
 	return 0;
 
 }

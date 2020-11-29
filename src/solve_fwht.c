@@ -44,23 +44,6 @@ void int_to_bin(u64 input, u8 *binary, int binlen)
 }
 
 /*
- * binary sequence to integer (u64)
- */
-u64 binSample_to_int(short *binary_input, int binlen)
-{
-
-    u64 output = 0;
-
-    for (int i = 0; i<binlen; i++)
-    {
-        if (binary_input[i] != 0)
-            output += ((u64)1)<<i;
-    }
-
-    return output;
-}
-
-/*
  * Convert sample to binary sequence, then to integer (u64)
  */
 u64 sample_to_int(short *input, int len, int q)
@@ -77,27 +60,6 @@ u64 sample_to_int(short *input, int len, int q)
     }
 
     return output;
-}
-
-void ProcessOneCathegoryMod2(lweInstance *lwe, lweSample *buf, int numSamples, int numSolvedCoordinates, int fwhtPositions, long* list)
-{
-    int q = lwe->q;
-    short z;
-    ASSERT(0 <= numSolvedCoordinates && numSolvedCoordinates <= n, "Bad parameter numSolvedCoordinates!\n");
-
-    u64 intsample;
-
-    /* process all samples */
-    for (u64 i=0; i<numSamples; i++)
-    {
-        lweSample *sample = &buf[i];
-        intsample = sample_to_int(sample->col.a+numSolvedCoordinates, fwhtPositions, q);
-        z = sample->sumWithError <= q/2 ? (sample->sumWithError)%2 : abs((sample->sumWithError -q)%2);
-        if (z == 0)
-            list[intsample] += 1;
-        else
-            list[intsample] -= 1;
-    }
 }
 
 /*
