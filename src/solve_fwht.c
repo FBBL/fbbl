@@ -44,23 +44,6 @@ void int_to_bin(u64 input, u8 *binary, int binlen)
 }
 
 /*
- * binary sequence to integer (u64)
- */
-u64 binSample_to_int(short *binary_input, int binlen)
-{
-
-    u64 output = 0;
-
-    for (int i = 0; i<binlen; i++)
-    {
-        if (binary_input[i] != 0)
-            output += ((u64)1)<<i;
-    }
-
-    return output;
-}
-
-/*
  * Convert sample to binary sequence, then to integer (u64)
  */
 u64 sample_to_int(short *input, int len, int q)
@@ -77,27 +60,6 @@ u64 sample_to_int(short *input, int len, int q)
     }
 
     return output;
-}
-
-void ProcessOneCathegoryMod2(lweInstance *lwe, lweSample *buf, int numSamples, int numSolvedCoordinates, int fwhtPositions, long* list)
-{
-    int q = lwe->q;
-    short z;
-    ASSERT(0 <= numSolvedCoordinates && numSolvedCoordinates <= n, "Bad parameter numSolvedCoordinates!\n");
-
-    u64 intsample;
-
-    /* process all samples */
-    for (u64 i=0; i<numSamples; i++)
-    {
-        lweSample *sample = &buf[i];
-        intsample = sample_to_int(sample->col.a+numSolvedCoordinates, fwhtPositions, q);
-        z = sample->sumWithError <= q/2 ? (sample->sumWithError)%2 : abs((sample->sumWithError -q)%2);
-        if (z == 0)
-            list[intsample] += 1;
-        else
-            list[intsample] -= 1;
-    }
 }
 
 /*
@@ -203,6 +165,7 @@ int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositi
     if(zeroPositions == n)
     {
         printf("Coordinates all solved\n");
+        lweDestroy(&lwe);
         return 1;
     }
 
@@ -223,6 +186,7 @@ int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositi
     FILE *f_src = fopenSamples(srcFolder, "rb");
     if (!f_src)
     {
+        lweDestroy(&lwe);
         return 4; /* could not open samples file */
     }
 
@@ -231,6 +195,7 @@ int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositi
     if (!sampleReadBuf)
     {
         fclose(f_src);
+        lweDestroy(&lwe);
         return 6; /* could not allocate sample read buffer */
     }
 
@@ -286,7 +251,7 @@ int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositi
     u64 max_pos = -1;
     double max = 0;
     double tot = 0;
-    for (int i = 0; i<N; i++)
+    for (u64 i = 0; i<N; i++)
     {
 #ifdef USE_SOFT_INFORMATION
         tot += fabs(list[i]);
@@ -308,8 +273,7 @@ int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositi
     // Convert solution into binary
     int_to_bin(max_pos, binary_solution, fwht_positions);
 
-
-
+    lweDestroy(&lwe);
     FREE(list);
     return 0;
 }
@@ -403,6 +367,7 @@ int solve_fwht_search_bruteforce(const char *srcFolder, u8 *binary_solution, sho
         sampleReadBuf = MALLOC(READ_BUFFER_CAPACITY_IN_SAMPLES * LWE_SAMPLE_SIZE_IN_BYTES);
         if (!sampleReadBuf)
         {
+            lweDestroy(&lwe);
             return 6; /* could not allocate sample read buffer */
         }
 
@@ -411,6 +376,7 @@ int solve_fwht_search_bruteforce(const char *srcFolder, u8 *binary_solution, sho
         f_src = fopenSamples(srcFolder, "rb");
         if (!f_src)
         {
+            lweDestroy(&lwe);
             return 4; /* could not open samples file */
         }
 
@@ -459,7 +425,7 @@ int solve_fwht_search_bruteforce(const char *srcFolder, u8 *binary_solution, sho
         // find maximum
         max_pos = -1;
         max = 0;
-        for (int i = 0; i<N; i++)
+        for (u64 i = 0; i<N; i++)
         {
 #ifdef USE_SOFT_INFORMATION
             if (max < fabs(list[i]))
@@ -505,6 +471,7 @@ int solve_fwht_search_bruteforce(const char *srcFolder, u8 *binary_solution, sho
     free_bias_table();
 #endif
     FREE(list);
+    lweDestroy(&lwe);
     return 0;
 }
 
@@ -562,6 +529,7 @@ int solve_fwht_search_hybrid(const char *srcFolder, u8 *binary_solution, int zer
         sampleReadBuf = MALLOC(READ_BUFFER_CAPACITY_IN_SAMPLES * LWE_SAMPLE_SIZE_IN_BYTES);
         if (!sampleReadBuf)
         {
+            lweDestroy(&lwe);
             return 6; /* could not allocate sample read buffer */
         }
 
@@ -570,6 +538,7 @@ int solve_fwht_search_hybrid(const char *srcFolder, u8 *binary_solution, int zer
         f_src = fopenSamples(srcFolder, "rb");
         if (!f_src)
         {
+            lweDestroy(&lwe);
             return 4; /* could not open samples file */
         }
         while (!feof(f_src))
@@ -599,7 +568,7 @@ int solve_fwht_search_hybrid(const char *srcFolder, u8 *binary_solution, int zer
         // find maximum
         max_pos = -1;
         max = 0;
-        for (int i = 0; i<N; i++)
+        for (u64 i = 0; i<N; i++)
         {
             if (max < labs(list[i]))
             {
@@ -628,6 +597,7 @@ int solve_fwht_search_hybrid(const char *srcFolder, u8 *binary_solution, int zer
     }
 
     FREE(list);
+    lweDestroy(&lwe);
     return 0;
 }
 
@@ -635,6 +605,8 @@ static short power_of_2[14] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
 
 int retrieve_full_secret(short *full_secret, u8 binary_secret[][MAX_N], int n_iterations, int n, int q)
 {
+
+    ASSERT(n_iterations>0, "numeber of iterations in retrieve_full_secret cannot be <1");
 
     int one_zero, max_abs;
 
@@ -647,9 +619,8 @@ int retrieve_full_secret(short *full_secret, u8 binary_secret[][MAX_N], int n_it
 
         if(one_zero)   // negative secret entry case
         {
-
             max_abs = n_iterations-1;
-            while(binary_secret[max_abs][i] == one_zero && max_abs >= 0)
+            while(max_abs >= 0 && binary_secret[max_abs][i] == one_zero)
                 max_abs--;
 
             // retrieve correct binary representation

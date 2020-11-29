@@ -29,6 +29,7 @@
 #include "lwe_instance.h"
 #include "log_utils.h"
 #include "string_utils.h"
+#include "transition_reduce_secret.h"
 #include "transition_unsorted_2_sorted.h"
 #include "transition_bkw_step_final.h"
 #include "storage_file_utilities.h"
@@ -42,21 +43,19 @@
 #include "transition_mod2.h"
 #include "solve_fwht.h"
 
-#define NUM_REDUCTION_STEPS 2
-#define BRUTE_FORCE_POSITIONS 2
+#define NUM_REDUCTION_STEPS 5
+#define BRUTE_FORCE_POSITIONS 0
 
 int main()
 {
-//  u64 totalNumInitialSamples = 1000000000; /* 1 billion */
-//  u64 totalNumInitialSamples = 100000000; /* 100 million */
-//  u64 totalNumInitialSamples = 1000000; /* 1 million */
-    u64 totalNumInitialSamples = 100000;
+
+    u64 totalNumInitialSamples = 10000;
 
     time_t start = time(NULL);
     srand(time(NULL));
     randomUtilRandomize();
 
-    lweInstance lwe;
+    lweInstance lwe, lpn;
     int ret;
     int n = 10;
     int q = 101;
@@ -67,42 +66,55 @@ int main()
     char outputfolder[128];
     char originalFolderName[256];
     char sortedFolderName[256];
+    char srcFolderName[256];
+    char dstFolderName[256];
 
-    sprintf(outputfolder, "%s/test_lms4_LF2_fwht_10_101_005", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
+    sprintf(outputfolder, "%s/test_smooth_lms_LF2_fwht_hybrid_10_101_005", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
     mkdir(outputfolder, 0777);
 
     sprintf(originalFolderName, "%s/original", outputfolder);
-    sprintf(sortedFolderName, "%s/step_0", outputfolder);
 
     testCreateNewInstanceFolder(originalFolderName, n, q, alpha);
     newStorageFolder(&lwe, originalFolderName, n, q, alpha);
-    addSamplesToSampleFile(originalFolderName, totalNumInitialSamples, start);
+    ret = addSamplesToSampleFile(originalFolderName, totalNumInitialSamples, start);
 
     u64 minDestinationStorageCapacityInSamples = round((double)(totalNumInitialSamples*4)/3); /* add about 25% storage room for sorted samples */
 
     /* set bkw step parameters */
     bkwStepParameters bkwStepPar[NUM_REDUCTION_STEPS];
 
-    /* Set steps: LMS */
+    /* Set steps: smooth LMS */
     for (int i=0; i<NUM_REDUCTION_STEPS; i++)
     {
-        bkwStepPar[i].sorting = LMS;
+        bkwStepPar[i].sorting = smoothLMS;
         bkwStepPar[i].startIndex = i == 0 ? 0 : bkwStepPar[i-1].startIndex + bkwStepPar[i-1].numPositions;
-        bkwStepPar[i].numPositions = 4;
+        bkwStepPar[i].numPositions = 2;
         bkwStepPar[i].selection = LF2;
-        bkwStepPar[i].sortingPar.LMS.p = 22;
+        bkwStepPar[i].sortingPar.smoothLMS.p = 21; // test
+        bkwStepPar[i].sortingPar.smoothLMS.p1 = 38; // test
+        bkwStepPar[i].sortingPar.smoothLMS.p2 = bkwStepPar[i].sortingPar.smoothLMS.p;
+        bkwStepPar[i].sortingPar.smoothLMS.prev_p1 = i == 0 ? -1 : bkwStepPar[i-1].sortingPar.smoothLMS.p1;
+        bkwStepPar[i].sortingPar.smoothLMS.meta_skipped = 0;
+        bkwStepPar[i].sortingPar.smoothLMS.unnatural_selection_ts = 0;
+        // char ns[256];
+        // sprintf_u64_delim(ns, num_categories(&lwe, &bkwStepPar[i]));
+        // printf(" %d %d num Categories %s \n", bkwStepPar[i].startIndex, bkwStepPar[i].numPositions, ns);
     }
 
-    int bruteForcePositions = BRUTE_FORCE_POSITIONS;
-    int fwht_positions = lwe.n - bruteForcePositions;
-    int zeropositions = 0;
+    int hybrid_positions = 2;
+    int fwht_positions = lwe.n - hybrid_positions;
+    int MAX_digits = ceil(log2(4*alpha*q));
 
-    u8 binary_solution[fwht_positions]; //CALLOC(fwht_positions*MAX_digits, sizeof(u8));
-    short bf_solution[bruteForcePositions]; //CALLOC(fwht_positions*MAX_digits, sizeof(u8));
+    u8 binary_solution[n]; //CALLOC(fwht_positions*MAX_digits, sizeof(u8));
 
-    /* Perform multiplication by 2 to each sample - sort (unsorted) samples */
     timeStamp(start);
-    printf("Multiply by 2 (mod 2) all samples and sort them\n");
+    printf("Start reduction phase - MAX Number of Iterations %d\n", MAX_digits);
+
+    sprintf(sortedFolderName, "%s/step_0", outputfolder);
+
+    /* sort (unsorted) samples */
+    timeStamp(start);
+    printf("multiply times 2 mod q\n");
     ret = transition_times2_modq(originalFolderName, sortedFolderName, minDestinationStorageCapacityInSamples, &bkwStepPar[0], start);
     switch (ret)
     {
@@ -115,20 +127,19 @@ int main()
         break;
     default:
         timeStamp(start);
-        printf("error %d when sorting initial samples (x2 mod q)\n", ret);
+        printf("error %d in transition_times2_modq\n", ret);
+        printf("originalFolderName %s\n", originalFolderName);
         exit(1);
     }
 
-    /* perform all but last codedBKW reduction steps */
-    char srcFolderName[256];
-    char dstFolderName[256];
+    /* perform all but last smooth LMS BKW reduction steps */
     int numReductionSteps = NUM_REDUCTION_STEPS;
 
     for (int i=0; i<numReductionSteps-1; i++)
     {
-        /* process BKW step */
+        /* process smooth LMS BKW step */
         timeStamp(start);
-        printf("Reduction step %02d -> %02d, %s reduction at positions %d to %d (destination sorting using positions %d to %d)\n", i, i+1, sortingAsString(bkwStepPar[i+1].sorting), bkwStepPar[i].startIndex, bkwStepPar[i].startIndex + bkwStepPar[i].numPositions - 1, bkwStepPar[i+1].startIndex, bkwStepPar[i+1].startIndex + bkwStepPar[i+1].numPositions - 1);
+        printf("Reduction step %02d -> %02d, %s reduction at positions %d to %d (destination sorting using positions %d to %d)\n", i, i+1, sortingAsString(bkwStepPar[i+1].sorting), bkwStepPar[i].startIndex, bkwStepPar[i].startIndex + bkwStepPar[i].numPositions - 1, bkwStepPar[i+1].startIndex, bkwStepPar[i+1].startIndex + bkwStepPar[i+1].numPositions);
         int ret;
         sprintf(srcFolderName, "%s/step_%d", outputfolder, i);
         sprintf(dstFolderName, "%s/step_%d", outputfolder, i+1);
@@ -158,7 +169,7 @@ int main()
     /* perform last reduction step */
     int i = numReductionSteps-1;
     timeStamp(start);
-    printf("Last reduction step %02d -> %02d, %s reduction at positions %d to %d\n", i, i+1, sortingAsString(bkwStepPar[i].sorting), bkwStepPar[i].startIndex, bkwStepPar[i].startIndex + bkwStepPar[i].numPositions);
+    printf("Last reduction step %02d -> %02d, %s reduction at positions %d to %d\n", i, i+1, sortingAsString(bkwStepPar[i].sorting), bkwStepPar[i].startIndex, bkwStepPar[i].startIndex + bkwStepPar[i].numPositions - 1);
     sprintf(srcFolderName, "%s/step_%d", outputfolder, i);
     sprintf(dstFolderName, "%s/step_final", outputfolder);
     timeStamp(start);
@@ -187,24 +198,38 @@ int main()
         exit(1);
     }
 
-    /* compute binary secret */
-    u8 real_binary_secret[lwe.n];
+    /* reduce all the system modulo 2 - to compute error rate - used only for testing */
+    sprintf(srcFolderName, "%s/step_final", outputfolder);
+    sprintf(dstFolderName, "%s/step_binary", outputfolder);
+
+    ret = transition_mod2(srcFolderName, dstFolderName, start);
+    switch (ret)
+    {
+    case 0: /* transition computed ok */
+        timeStamp(start);
+        printf("Start binary sample verification for computing error rate\n");
+        printBinarySampleVerification(dstFolderName, start);
+        break;
+    case 100: /* mod2 unnecessary (destination folder already exists) */
+        timeStamp(start);
+        printf("skipping, destination folder %s already exists\n\n", dstFolderName);
+        break;
+    default:
+        timeStamp(start);
+        printf("error %d when reducing modulo 2 samples. Were there enough initial samples?\n", ret);
+        exit(1);
+    }
+
+    lweParametersFromFile(&lpn, dstFolderName);
     lweDestroy(&lwe);
     lweParametersFromFile(&lwe, originalFolderName);
-    for (int i = 0; i < lwe.n; ++i)
-    {
-        if (lwe.s[i] < q/2)
-            real_binary_secret[i] = lwe.s[i] % 2;
-        else
-            real_binary_secret[i] = (lwe.s[i]+1) % 2;
-    }
 
     /* Solving phase - using Fast Walsh Hadamard Tranform */
 
     timeStamp(start);
     printf("Solving phase - Fast Walsh Hadamard Transform from position %d to %d\n", 0, fwht_positions-1);
 
-    ret = solve_fwht_search_bruteforce(dstFolderName, binary_solution, bf_solution, zeropositions, bruteForcePositions, fwht_positions, start);
+    ret = solve_fwht_search_hybrid(srcFolderName, binary_solution, 0, hybrid_positions, fwht_positions, start);
     if(ret)
     {
         printf("error %d in solve_fwht_search_hybrid\n", ret);
@@ -214,41 +239,28 @@ int main()
     printf("\n");
     timeStamp(start);
     printf("Binary Solution Found (");
-    for(int i = 0; i<lwe.n-bruteForcePositions; i++)
+    for(int i = 0; i<lpn.n; i++)
         printf("%hhu ",binary_solution[i]);
-    printf("- ");
-    for(int i = 0; i<bruteForcePositions; i++)
-        printf("%hi ",bf_solution[i]);
     printf(")\n");
 
     timeStamp(start);
-    printf("Real Solution         (");
-    for(int i = 0; i<lwe.n-bruteForcePositions; i++)
-        printf("%hhu ",real_binary_secret[i]);
-    printf("- ");
-    for(int i = 0; i<bruteForcePositions; i++)
-        printf("%hi ",lwe.s[i+zeropositions+fwht_positions]);
+    printf("Real Binary Solution  (");
+    for(int i = 0; i<lpn.n; i++)
+        printf("%hi ",lpn.s[i]);
     printf(")\n");
 
-    for(int i = 0; i<lwe.n-bruteForcePositions; i++)
+    for(int i = 0; i<fwht_positions; i++)
     {
-        if (binary_solution[i] != real_binary_secret[i])
-        {
-            printf("WRONG retrieved solution!\n");
-            return 1;
-        }
-    }
-    for(int i = 0; i<bruteForcePositions; i++)
-    {
-        if (bf_solution[i] != lwe.s[i+zeropositions+fwht_positions])
+        if (binary_solution[i] != lpn.s[i])
         {
             printf("WRONG retrieved solution!\n");
             return 1;
         }
     }
     lweDestroy(&lwe);
+    lweDestroy(&lpn);
+
     printf("Test passed\n");
 
     return 0;
 }
-

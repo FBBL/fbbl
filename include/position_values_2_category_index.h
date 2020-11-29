@@ -49,4 +49,7 @@ u64 position_values_2_category_index_coded_bkw(lweInstance *lwe, bkwStepParamete
 /* singleton categories */
 int is_singleton(bkwStepParameters *bkwStepPar, u64 categoryIndex, u64 numCategories);
 
+/* free table */
+void free_table_plain_bkw_2_positions(void);
+
 #endif

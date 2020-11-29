@@ -39,6 +39,7 @@ int transition_unsorted_2_sorted(const char *srcFolderName, const char *dstFolde
     u64 totNumUnsortedSamples = numSamplesInSampleFile(srcFolderName);
     if (!totNumUnsortedSamples)
     {
+        lweDestroy(&lwe);
         return 2; /* no samples in source file */
     }
     char str[256];
@@ -52,6 +53,7 @@ int transition_unsorted_2_sorted(const char *srcFolderName, const char *dstFolde
     int ret = storageWriterInitialize(&sw, dstFolderName, &lwe, bkwStepPar, categoryCapacityFile);
     if (ret)
     {
+        lweDestroy(&lwe);
         return 100 + ret; /* could not initialize storage writer */
     }
     timeStamp(start);
@@ -61,6 +63,7 @@ int transition_unsorted_2_sorted(const char *srcFolderName, const char *dstFolde
     FILE *f_src = fopenSamples(srcFolderName, "rb");
     if (!f_src)
     {
+        lweDestroy(&lwe);
         if (storageWriterFree(&sw))
         {
             return 3; /* failed to free storage writer */
@@ -74,6 +77,7 @@ int transition_unsorted_2_sorted(const char *srcFolderName, const char *dstFolde
     if (!sampleReadBuf)
     {
         fclose(f_src);
+        lweDestroy(&lwe);
         if (storageWriterFree(&sw))
         {
             return 5; /* failed to free storage writer */
@@ -154,6 +158,7 @@ int transition_unsorted_2_sorted(const char *srcFolderName, const char *dstFolde
     FREE(sampleReadBuf);
     fclose(f_src);
     ret = storageWriterFree(&sw); /* flushes automatically */
+    lweDestroy(&lwe);
     if (ret)
     {
         return 200 + ret; /* could not free storage writer */

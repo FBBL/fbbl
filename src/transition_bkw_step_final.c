@@ -87,6 +87,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     {
         numZeroColumns++;
         numZeroColumnsAdd++;
+        free(newSample);
         return 1; /* sample processed but not added */
     }
 
@@ -97,6 +98,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
         printf("numWritten = %d\n", numWritten);
     }
 
+    free(newSample);
     return 1; /* one sample processed (and actually added) */
 }
 
@@ -298,6 +300,7 @@ int transition_bkw_step_final(const char *srcFolderName, const char *dstFolderNa
     u64 srcNumCategories, srcCategoryCapacity, srcNumTotalSamples;
     if (sampleInfoFromFile(srcFolderName, srcBkwStepPar, &srcNumCategories, &srcCategoryCapacity, &srcNumTotalSamples, NULL))
     {
+        lweDestroy(&lwe);
         return 1; /* error reading from samples info file */
     }
 
@@ -311,22 +314,24 @@ int transition_bkw_step_final(const char *srcFolderName, const char *dstFolderNa
     storageReader sr;
     if (storageReaderInitialize(&sr, srcFolderName))
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("could not initialize storage reader");
         return 3; /* could not initialize storage reader */
     }
 
     /* Initialize destination folder and file */
     newStorageFolderWithGivenLweInstance(&lwe, dstFolderName);
-    newStorageFolder(&lwe, dstFolderName, lwe.n, lwe.q, lwe.alpha);
     FILE *wf = fopenSamples(dstFolderName, "ab");
     if (!wf)
     {
+        lweDestroy(&lwe);
         return -1;
     }
 
     /* initialize add and diff tables for faster operation */
     if (createSumAndDiffTables(lwe.q))
     {
+        lweDestroy(&lwe);
         return 6; /* could not create addition and difference tables */
     }
 
@@ -394,6 +399,7 @@ int transition_bkw_step_final(const char *srcFolderName, const char *dstFolderNa
     storageReaderFree(&sr);
     fclose(wf);
     freeSumAndDiffTables();
+    lweDestroy(&lwe);
 
     return 0;
 }

@@ -209,6 +209,7 @@ int main()
     }
 
     sprintf(srcFolderName, "%s/step_final", outputfolder);
+    lweDestroy(&lwe);
     lweParametersFromFile(&lwe, originalFolderName);
 
     /* compute binary secret */
@@ -267,6 +268,7 @@ int main()
             return 1;
         }
     }
+    lweDestroy(&lwe);
 
     printf("Test passed\n");
     return 0;

@@ -54,6 +54,7 @@ int transition_mod2(const char *srcFolderName, const char *dstFolderName, time_t
     u64 totNumdSamples = numSamplesInSampleFile(srcFolderName);
     if (!totNumdSamples)
     {
+        lweDestroy(&lwe);
         return 2; /* no samples in source file */
     }
     char str[256];
@@ -66,6 +67,7 @@ int transition_mod2(const char *srcFolderName, const char *dstFolderName, time_t
     FILE *f_src = fopenSamples(srcFolderName, "rb");
     if (!f_src)
     {
+        lweDestroy(&lwe);
         return 4; /* could not open samples file */
     }
 
@@ -73,6 +75,7 @@ int transition_mod2(const char *srcFolderName, const char *dstFolderName, time_t
     lweSample *sampleReadBuf = MALLOC(READ_BUFFER_CAPACITY_IN_SAMPLES * LWE_SAMPLE_SIZE_IN_BYTES);
     if (!sampleReadBuf)
     {
+        lweDestroy(&lwe);
         fclose(f_src);
         return 6; /* could not allocate sample read buffer */
     }
@@ -109,10 +112,11 @@ int transition_mod2(const char *srcFolderName, const char *dstFolderName, time_t
         int blockSize = 1000000;
 
         newStorageFolderWithGivenLweInstance(&lwe, dstFolderName);
-        newStorageFolder(&lwe, dstFolderName, lwe.n, lwe.q, lwe.alpha);
         FILE *f = fopenSamples(dstFolderName, "ab");
         if (!f)
         {
+            FREE(sampleReadBuf);
+            lweDestroy(&lwe);
             return -1;
         }
 
@@ -129,6 +133,7 @@ int transition_mod2(const char *srcFolderName, const char *dstFolderName, time_t
     /* cleanup */
     FREE(sampleReadBuf);
     fclose(f_src);
+    lweDestroy(&lwe);
 
     return 0;
 }

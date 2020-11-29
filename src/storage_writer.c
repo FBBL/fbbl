@@ -263,6 +263,7 @@ int storageWriterFree(storageWriter *sw)
     FREE(sw->buf);
     FREE(sw->numStoredBuf);
     FREE(sw->numStoredFile);
+    FREE(sw->fileWritingBuffer);
     fclose(sw->f);
     return 0;
 }

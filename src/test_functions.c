@@ -313,6 +313,7 @@ void testCreateNewInstanceFolder(const char *folderName, int n, int q, double al
     default:
         printf("unknown fault\n");
     }
+    lweDestroy(&lwe);
 }
 
 /*
@@ -469,6 +470,7 @@ int tuDarmstadtFileFormatConversionWithErrorChecking(const char *srcFileName, co
     int ret = convertTUDarmstadtProblemInstanceToNativeFormat(&lwe, srcFileName, dstFolderName, useSampleAmplification, totalNumSamples);
     if (ret)
     {
+        lweDestroy(&lwe);
         timeStamp(start);
         printf("conversion from tu darmstadt file did not work (error %d)\n", ret);
         ASSERT_ALWAYS("conversion from tu darmstadt file did not work");
@@ -517,5 +519,6 @@ int tuDarmstadtFileFormatConversionWithErrorChecking(const char *srcFileName, co
 
     FREE(sampleBuf);
 #endif
+    lweDestroy(&lwe);
     return 0;
 }

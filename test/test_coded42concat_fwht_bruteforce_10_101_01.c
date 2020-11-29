@@ -189,6 +189,7 @@ int main()
 
     /* compute binary secret */
     u8 real_binary_secret[lwe.n];
+    lweDestroy(&lwe);
     lweParametersFromFile(&lwe, originalFolderName);
     for (int i = 0; i < lwe.n; ++i)
     {
@@ -246,6 +247,7 @@ int main()
         }
     }
 
+    lweDestroy(&lwe);
     printf("Test passed\n");
 
     return 0;

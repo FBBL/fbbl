@@ -325,6 +325,7 @@ int main()
     printf(")\n");
 
     sprintf(originalFolderName, "%s/original_0", outputfolder);
+    lweDestroy(&lwe);
     lweParametersFromFile(&lwe, originalFolderName);
 
     timeStamp(start);
@@ -341,6 +342,8 @@ int main()
             return 1;
         }
     }
+    lweDestroy(&lwe);
+    lweDestroy(&lpn);
 
     printf("Test passed\n");
 

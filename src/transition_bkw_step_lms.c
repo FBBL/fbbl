@@ -303,6 +303,7 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
     u64 srcNumCategories, srcCategoryCapacity, srcNumTotalSamples;
     if (sampleInfoFromFile(srcFolderName, srcBkwStepPar, &srcNumCategories, &srcCategoryCapacity, &srcNumTotalSamples, NULL))
     {
+        lweDestroy(&lwe);
         return 1; /* error reading from samples info file */
     }
 
@@ -311,6 +312,7 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
     printf("transition_bkw_step_lms: num src categories is %s, category capacity is %s, total num src samples is %s (%5.2f%% full)\n", sprintf_u64_delim(nc, srcNumCategories), sprintf_u64_delim(cc, srcCategoryCapacity), sprintf_u64_delim(ns, srcNumTotalSamples), 100*srcNumTotalSamples/(double)(srcNumCategories * srcCategoryCapacity));
     if (srcBkwStepPar->sorting != plainBKW && srcBkwStepPar->sorting != LMS)
     {
+        lweDestroy(&lwe);
         return 2; /* unexpected sample sorting at src folder */
     }
 
@@ -318,6 +320,7 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
     storageReader sr;
     if (storageReaderInitialize(&sr, srcFolderName))
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("could not initialize storage reader");
         return 3; /* could not initialize storage reader */
     }
@@ -332,6 +335,7 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
     storageWriter sw;
     if (storageWriterInitialize(&sw, dstFolderName, &lwe, dstBkwStepPar, dstCategoryCapacity /* categoryCapacityFile same as in src file */))
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("could not initialize storage writer");
         return 4; /* could not initialize storage writer */
     }
@@ -340,6 +344,7 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
     /* TODO: move to initialization */
     if (createSumAndDiffTables(lwe.q))
     {
+        lweDestroy(&lwe);
         return 6; /* could not create addition and difference tables */
     }
 
@@ -415,6 +420,7 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
 #endif
 
     freeSumAndDiffTables();
+    lweDestroy(&lwe);
 
     return 0;
 }

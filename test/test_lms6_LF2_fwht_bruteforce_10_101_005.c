@@ -42,8 +42,8 @@
 #include "transition_mod2.h"
 #include "solve_fwht.h"
 
-#define NUM_REDUCTION_STEPS 2
-#define BRUTE_FORCE_POSITIONS 2
+#define NUM_REDUCTION_STEPS 1
+#define BRUTE_FORCE_POSITIONS 1
 
 int main()
 {
@@ -58,7 +58,7 @@ int main()
 
     lweInstance lwe;
     int ret;
-    int n = 10;
+    int n = 7;
     int q = 101;
     double alpha = 0.005;
 
@@ -68,7 +68,7 @@ int main()
     char originalFolderName[256];
     char sortedFolderName[256];
 
-    sprintf(outputfolder, "%s/test_lms4_LF2_fwht_10_101_005", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
+    sprintf(outputfolder, "%s/test_lms6_LF2_fwht_bruteforce_10_101_005", LOCAL_SIMULATION_DIRECTORY_PATH_PREFIX_A);
     mkdir(outputfolder, 0777);
 
     sprintf(originalFolderName, "%s/original", outputfolder);
@@ -88,9 +88,9 @@ int main()
     {
         bkwStepPar[i].sorting = LMS;
         bkwStepPar[i].startIndex = i == 0 ? 0 : bkwStepPar[i-1].startIndex + bkwStepPar[i-1].numPositions;
-        bkwStepPar[i].numPositions = 4;
+        bkwStepPar[i].numPositions = 6;
         bkwStepPar[i].selection = LF2;
-        bkwStepPar[i].sortingPar.LMS.p = 22;
+        bkwStepPar[i].sortingPar.LMS.p = 23;
     }
 
     int bruteForcePositions = BRUTE_FORCE_POSITIONS;

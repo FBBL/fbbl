@@ -258,6 +258,7 @@ int sampleInfoFromFile(const char *folderName, bkwStepParameters *bkwStepPar, u6
     FILE *f = fopen(fileName, "r");
     if (!f)
     {
+        lweDestroy(&lwe);
         return 1; /* could not open sample info file */
     }
 
@@ -266,18 +267,25 @@ int sampleInfoFromFile(const char *folderName, bkwStepParameters *bkwStepPar, u6
 
     /* sorting and bkw step parameters */
     char sortingString[512];
-    if(!fscanf(f, "sorting = %[^\n]\n", sortingString)) /* read text to end of line to include spaces */
+    if(!fscanf(f, "sorting = %[^\n]\n", sortingString))  /* read text to end of line to include spaces */
+    {
+        lweDestroy(&lwe);
         return 2; /* could not determine sorting method */
+    }
 
     if (bkwStepPar && !bkwStepParametersFromString(sortingString, bkwStepPar))
     {
+        lweDestroy(&lwe);
         ASSERT_ALWAYS("sorting not determined");
         return 2; /* could not determine sorting method */
     }
 
     /* number of categories */
     if(!fscanf(f, "num categories = %" PRIu64 "\n", &numCat))
+    {
+        lweDestroy(&lwe);
         return 3;
+    }
     if (numCategories)
     {
         *numCategories = numCat;
@@ -293,25 +301,38 @@ int sampleInfoFromFile(const char *folderName, bkwStepParameters *bkwStepPar, u6
 
     /* category capacity */
     if(!fscanf(f, "category capacity (num samples) = %" PRIu64 "\n", categoryCapacity ? categoryCapacity : &dummy))
+    {
+        lweDestroy(&lwe);
         return 3;
+    }
 
     /* total number of samples stored */
     if(!fscanf(f, "total num samples stored = %" PRIu64 "\n", numTotalSamples ? numTotalSamples : &dummy))
+    {
+        lweDestroy(&lwe);
         return 3;
+    }
 
     /* number of samples per category */
     if (numSamplesPerCategory)
     {
         if(!fscanf(f, "num samples per category = (%" PRIu64 "", &numSamplesPerCategory[0]))
+        {
+            lweDestroy(&lwe);
             return 3;
+        }
         for (int i=1; i<numCat; i++)
         {
             if(!fscanf(f, ",%" PRIu64 "", &numSamplesPerCategory[i]))
+            {
+                lweDestroy(&lwe);
                 return 3;
+            }
         }
     }
 
     fclose(f);
+    lweDestroy(&lwe);
     return 0;
 }
 
@@ -788,6 +809,7 @@ int convertTUDarmstadtProblemInstanceToNativeFormat(lweInstance *lwe, const char
     if (!useSampleAmplification)
     {
         fclose(f2); /* close (unsorted) sample file */
+        FREE(sampleBuf);
         return 0;
     }
 
@@ -861,6 +883,8 @@ int convertTUDarmstadtProblemInstanceToNativeFormat(lweInstance *lwe, const char
 
 //  printf("sample amplification from quadruples not implemented, so quitting amplification here\n");
 
+    FREE(sampleBuf);
+    FREE(amplifiedSampleBuf);
     fclose(f2);
 
     return 0;

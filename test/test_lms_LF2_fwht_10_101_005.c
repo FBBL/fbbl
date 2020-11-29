@@ -233,6 +233,8 @@ int main()
             return 1;
         }
     }
+    lweDestroy(&lwe);
+    FREE(binary_solution);
     printf("Test passed\n");
 
     return 0;

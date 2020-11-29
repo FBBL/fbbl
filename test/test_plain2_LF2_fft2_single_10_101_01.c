@@ -190,6 +190,7 @@ int main()
     /* solving phase (using fft to guess) */
     int numSolvedCoordinates = 0;
     sprintf(srcFolderName, "%s/step_%d", outputfolder, numReductionSteps);
+    lweDestroy(&lwe);
     int paramsReadError = lweParametersFromFile(&lwe, srcFolderName);
     if (paramsReadError)
     {
@@ -259,7 +260,7 @@ int main()
         {
             printf("solving for positions %d to %d...", startIndexForSolving, startIndexForSolving + numSolvablePositions - 1);
         }
-		int ret = solve_fft_search(srcFolderName, solution, numSolvedCoordinates, numSolvablePositions, FFT_SOLVER_SINGLE_PRECISION);
+        int ret = solve_fft_search(srcFolderName, solution, numSolvedCoordinates, numSolvablePositions, FFT_SOLVER_SINGLE_PRECISION);
         printf("done\n");
         if (ret)
         {
@@ -300,6 +301,8 @@ int main()
         }
     }
     printf(")\n");
+
+    lweDestroy(&lwe);
 
     if (correctly_solved)
     {

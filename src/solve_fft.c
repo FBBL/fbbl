@@ -388,6 +388,7 @@ int solve_fft_search(const char *srcFolder, short *solution, int numSolvedCoordi
 
     if (numSolvedCoordinates == n)
     {
+        lweDestroy(&lwe);
         return 1; /* all positions solved */
     }
 
@@ -396,6 +397,7 @@ int solve_fft_search(const char *srcFolder, short *solution, int numSolvedCoordi
     if (ret)
     {
         printf("*** solve_fft.c: storage reader returned %d on initialize\n", ret);
+        lweDestroy(&lwe);
         return 2;
     }
 
@@ -436,6 +438,7 @@ int solve_fft_search(const char *srcFolder, short *solution, int numSolvedCoordi
             char s[128];
             printf("*** solve_plain_bkw_sorted: allocation failure (tried to allocate %s bytes)\n", sprintf_u64_delim(s, sizeof(fftwf_complex) * numFftSlots));
             ASSERT_ALWAYS("allocation failure");
+            lweDestroy(&lwe);
             return 4;
         }
         MEMSET(inS, 0, sizeof(fftwf_complex) * numFftSlots);
@@ -451,6 +454,7 @@ int solve_fft_search(const char *srcFolder, short *solution, int numSolvedCoordi
             char s[128];
             printf("*** solve_plain_bkw_sorted: allocation failure (tried to allocate %s bytes)\n", sprintf_u64_delim(s, sizeof(fftw_complex) * numFftSlots));
             ASSERT_ALWAYS("allocation failure");
+            lweDestroy(&lwe);
             return 3;
         }
         MEMSET(in, 0, sizeof(fftw_complex) * numFftSlots);
@@ -619,6 +623,8 @@ int solve_fft_search(const char *srcFolder, short *solution, int numSolvedCoordi
     default:
         ASSERT_ALWAYS("Unhandled precision");
     }
+
+    lweDestroy(&lwe);
     return 0;
 }
 
@@ -922,6 +928,7 @@ int solve_fft_search_hybrid(const char *srcFolder, short *solution, int numSolve
 
     if (numSolvedCoordinates == n)
     {
+        lweDestroy(&lwe);
         return 1; /* all positions solved */
     }
 
@@ -955,6 +962,7 @@ int solve_fft_search_hybrid(const char *srcFolder, short *solution, int numSolve
         {
             char s[128];
             printf("*** solve_plain_bkw_sorted: allocation failure (tried to allocate %s bytes)\n", sprintf_u64_delim(s, sizeof(fftw_complex) * numFftSlots));
+            lweDestroy(&lwe);
             return 3;
         }
     }
@@ -968,6 +976,7 @@ int solve_fft_search_hybrid(const char *srcFolder, short *solution, int numSolve
         {
             char s[128];
             printf("*** solve_plain_bkw_sorted: allocation failure (tried to allocate %s bytes)\n", sprintf_u64_delim(s, sizeof(fftwf_complex) * numFftSlots));
+            lweDestroy(&lwe);
             return 4;
         }
     }
@@ -1040,8 +1049,6 @@ int solve_fft_search_hybrid(const char *srcFolder, short *solution, int numSolve
                 inS[j] = 0;
             }
         }
-
-
 
         while (ret)
         {
@@ -1186,6 +1193,7 @@ int solve_fft_search_hybrid(const char *srcFolder, short *solution, int numSolve
         fftw_free(outS);
     }
 
+    lweDestroy(&lwe);
     return 0;
 }
 
