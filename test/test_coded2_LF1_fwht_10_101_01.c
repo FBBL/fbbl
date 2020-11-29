@@ -227,7 +227,7 @@ int main()
 
     for(int i = 0; i<solved_positions; i++)
     {
-        if (binary_solution[i] != lpn.s[i])
+        if ((short)binary_solution[i] != lpn.s[i])
         {
             printf("WRONG retrieved solution!\n");
             return 1;
@@ -235,6 +235,8 @@ int main()
     }
 
     free(binary_solution);
+    lweDestroy(&lwe);
+    lweDestroy(&lpn);
     printf("Test passed\n");
 
     return 0;

@@ -221,6 +221,7 @@ int main()
     }
 
     lweParametersFromFile(&lpn, dstFolderName);
+    lweDestroy(&lwe);
     lweParametersFromFile(&lwe, originalFolderName);
 
     /* Solving phase - using Fast Walsh Hadamard Tranform */
@@ -256,6 +257,8 @@ int main()
             return 1;
         }
     }
+    lweDestroy(&lwe);
+    lweDestroy(&lpn);
 
     printf("Test passed\n");
 

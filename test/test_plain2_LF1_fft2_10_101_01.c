@@ -190,6 +190,7 @@ int main()
     /* solving phase (using fft to guess) */
     int numSolvedCoordinates = 0;
     sprintf(srcFolderName, "%s/step_%d", outputfolder, numReductionSteps);
+    lweDestroy(&lwe);
     int paramsReadError = lweParametersFromFile(&lwe, srcFolderName);
     if (paramsReadError)
     {
@@ -301,6 +302,7 @@ int main()
         }
     }
     printf(")\n");
+    lweDestroy(&lwe);
 
     if (correctly_solved)
     {

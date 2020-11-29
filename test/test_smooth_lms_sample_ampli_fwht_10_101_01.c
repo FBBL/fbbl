@@ -304,7 +304,6 @@ int main()
 #endif
 
     lweDestroy(&lwe);
-
     lweParametersFromFile(&lwe, convertedFolderName);
     transformSecret(&lwe, knownSecret);
 
