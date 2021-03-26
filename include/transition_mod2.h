@@ -14,8 +14,8 @@
  *  along with Nome-Programma.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef SRC_FILE_BASED_LWE_TRANSITION_MOD2_H_
-#define SRC_FILE_BASED_LWE_TRANSITION_MOD2_H_
+#ifndef LWE_TRANSITION_MOD2_H
+#define LWE_TRANSITION_MOD2_H
 
 #include "bkw_step_parameters.h"
 #include <time.h>
@@ -26,4 +26,4 @@
 
 int transition_mod2(const char *srcFolderName, const char *dstFolderName, time_t start);
 
-#endif /* SRC_FILE_BASED_LWE_TRANSITION_MOD2_H_ */
+#endif /* LWE_TRANSITION_MOD2_H */

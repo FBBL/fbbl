@@ -361,5 +361,7 @@ int main(int argc, char* argv[])
         printf("%d ",lpn.s[i]);
     printf("\n");
 
+    FREE(binary_solution);
+
     return 0;
 }

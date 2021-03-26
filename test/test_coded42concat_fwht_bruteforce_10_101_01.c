@@ -60,7 +60,7 @@ int main()
     int ret;
     int n = 10;
     int q = 101;
-    double alpha = 0.01;
+    double alpha = 0.005;
 
     lweInit(&lwe, n, q, alpha);
 
