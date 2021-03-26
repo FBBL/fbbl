@@ -14,12 +14,12 @@
  *  along with Nome-Programma.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef SRC_FILE_BASED_LWE_TRANSITION_BKW_STEP_SMOOTH_LMS_H_
-#define SRC_FILE_BASED_LWE_TRANSITION_BKW_STEP_SMOOTH_LMS_H_
+#ifndef TRANSITION_BKW_STEP_SMOOTH_LMS_H
+#define TRANSITION_BKW_STEP_SMOOTH_LMS_H
 
 #include "bkw_step_parameters.h"
 #include <time.h>
 
 int transition_bkw_step_smooth_lms(const char *srcFolderName, const char *dstFolderName, bkwStepParameters *srcBkwStepPar, bkwStepParameters *dstBkwStepPar, u64 *numSamplesStored, time_t start);
 
-#endif /* SRC_FILE_BASED_LWE_TRANSITION_BKW_STEP_SMOOTH_LMS_H_ */
+#endif /* TRANSITION_BKW_STEP_SMOOTH_LMS_H */

@@ -17,7 +17,6 @@
 #include "transition_bkw_step_lms.h"
 #include "storage_file_utilities.h"
 #include "memory_utils.h"
-#include "lookup_tables.h"
 #include "log_utils.h"
 #include "string_utils.h"
 #include "lwe_sorting.h"
@@ -37,6 +36,7 @@ static u64 numZeroColumnsSub;
 static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, bkwStepParameters *srcBkwStepPar, bkwStepParameters *dstBkwStepPar, storageWriter *sw)
 {
     int n = lwe->n;
+    int q = lwe->q;
     int startIndex = dstBkwStepPar->startIndex;
     int numPositions = dstBkwStepPar->numPositions;
     short pn[MAX_LMS_POSITIONS];
@@ -44,7 +44,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     /* compute category index of new sample (without computing entire new sample) */
     for (int i=0; i<numPositions; i++)
     {
-        pn[i] = diffTable(columnValue(sample1, startIndex + i), columnValue(sample2, startIndex + i));
+        pn[i] = (columnValue(sample1, startIndex + i) - columnValue(sample2, startIndex + i) + q) % q;
     }
     u64 categoryIndex = position_values_2_category_index_lms(lwe, dstBkwStepPar, pn);
 
@@ -66,13 +66,13 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     /* compute new sample (subtract), write to reserved sample memory area */
     for (int i=0; i<n; i++)
     {
-        newSample->col.a[i] = diffTable(columnValue(sample1, i), columnValue(sample2, i));
+        newSample->col.a[i] = (columnValue(sample1, i) - columnValue(sample2, i) + q) % q;
     }
     newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
     int err1 = error(sample1);
     int err2 = error(sample2);
-    newSample->error = (err1 == -1 || err2 == -1) ? -1 : diffTable(err1, err2); /* undefined if either parent error term is undefined */
-    newSample->sumWithError = diffTable(sumWithError(sample1), sumWithError(sample2));
+    newSample->error = (err1 == -1 || err2 == -1) ? -1 : (err1 - err2 + q) % q; /* undefined if either parent error term is undefined */
+    newSample->sumWithError = (sumWithError(sample1) - sumWithError(sample2) + q) % q;
 
     /* discard zero columns (assuming that these are produced by coincidental cancellation due to sample amplification) */
     if (columnIsZero(newSample, n))
@@ -89,6 +89,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
 static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, bkwStepParameters *srcBkwStepPar, bkwStepParameters *dstBkwStepPar, storageWriter *sw)
 {
     int n = lwe->n;
+    int q = lwe->q;
     int startIndex = dstBkwStepPar->startIndex;
     int numPositions = dstBkwStepPar->numPositions;
     short pn[MAX_LMS_POSITIONS];
@@ -96,7 +97,7 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     /* compute category index of new sample (without computing entire new sample) */
     for (int i=0; i<numPositions; i++)
     {
-        pn[i] = sumTable(columnValue(sample1, startIndex + i), columnValue(sample2, startIndex + i));
+        pn[i] = (columnValue(sample1, startIndex + i) + columnValue(sample2, startIndex + i)) % q;
     }
     u64 categoryIndex = position_values_2_category_index_lms(lwe, dstBkwStepPar, pn);
 
@@ -118,13 +119,13 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     /* compute new sample (add), write to reserved sample memory area */
     for (int i=0; i<n; i++)
     {
-        newSample->col.a[i] = sumTable(columnValue(sample1, i), columnValue(sample2, i));
+        newSample->col.a[i] = (columnValue(sample1, i) + columnValue(sample2, i)) % q;
     }
     newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
     int err1 = error(sample1);
     int err2 = error(sample2);
-    newSample->error = (err1 == -1 || err2 == -1) ? -1 : sumTable(err1, err2); /* undefined if either parent error term is undefined */
-    newSample->sumWithError = sumTable(sumWithError(sample1), sumWithError(sample2));
+    newSample->error = (err1 == -1 || err2 == -1) ? -1 : (err1 + err2) % q; /* undefined if either parent error term is undefined */
+    newSample->sumWithError = (sumWithError(sample1) + sumWithError(sample2)) % q;
 
     /* discard zero columns (assuming that these are produced by coincidental cancellation due to sample amplification) */
     if (columnIsZero(newSample, n))
@@ -340,14 +341,6 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
         return 4; /* could not initialize storage writer */
     }
 
-    /* initialize add and diff tables for faster operation */
-    /* TODO: move to initialization */
-    if (createSumAndDiffTables(lwe.q))
-    {
-        lweDestroy(&lwe);
-        return 6; /* could not create addition and difference tables */
-    }
-
     /* process samples */
     u64 maxNumSamplesPerCategory = dstCategoryCapacity * EARLY_ABORT_LOAD_LIMIT_PERCENTAGE / SAMPLE_DEPENDENCY_SMEARING + 1;
     u64 cat = 0; /* current category index */
@@ -419,7 +412,6 @@ int transition_bkw_step_lms(const char *srcFolderName, const char *dstFolderName
     printf("  zcol : %12s (%s in sub + %s in add)\n", sprintf_u64_delim(s1, numZeroColumns), sprintf_u64_delim(s2, numZeroColumnsSub), sprintf_u64_delim(s3, numZeroColumnsAdd));
 #endif
 
-    freeSumAndDiffTables();
     lweDestroy(&lwe);
 
     return 0;

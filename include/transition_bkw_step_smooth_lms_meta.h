@@ -14,12 +14,12 @@
  *  along with Nome-Programma.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef TRANSITION_BKW_STEP_SMOOTH_LMS_META_H_INCLUDED
-#define TRANSITION_BKW_STEP_SMOOTH_LMS_META_H_INCLUDED
+#ifndef TRANSITION_BKW_STEP_SMOOTH_LMS_META_H
+#define TRANSITION_BKW_STEP_SMOOTH_LMS_META_H
 
 #include "bkw_step_parameters.h"
 #include <time.h>
 
 int transition_bkw_step_smooth_lms_meta(const char *srcFolderName, const char *dstFolderName, bkwStepParameters *srcBkwStepPar, bkwStepParameters *dstBkwStepPar, u64 *numSamplesStored, time_t start);
 
-#endif // TRANSITION_BKW_STEP_SMOOTH_LMS_META_H_INCLUDED
+#endif // TRANSITION_BKW_STEP_SMOOTH_LMS_META_H

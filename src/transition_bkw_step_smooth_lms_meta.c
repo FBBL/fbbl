@@ -17,7 +17,6 @@
 #include "transition_bkw_step_smooth_lms_meta.h"
 #include "storage_file_utilities.h"
 #include "memory_utils.h"
-#include "lookup_tables.h"
 #include "log_utils.h"
 #include "string_utils.h"
 #include "lwe_sorting.h"
@@ -42,7 +41,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
         short tmp_a;
         for (int i=srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; i<srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; i++)
         {
-            tmp_a = diffTable(columnValue(sample1, i), columnValue(sample2, i));
+            tmp_a = (columnValue(sample1, i) - columnValue(sample2, i) + q) % q;
             tmp_a = MIN(tmp_a, q - tmp_a);
             a_norm_squared += tmp_a*tmp_a;
         }
@@ -55,7 +54,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     }
 
     /* Check that the +1 position behaves correctly! */
-    short tmp_a = diffTable(columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions), columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions));
+    short tmp_a = (columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions) - columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions) + q) % q;
     if (tmp_a >= srcBkwStepPar->sortingPar.smoothLMS.p1 && tmp_a <= lwe->q - srcBkwStepPar->sortingPar.smoothLMS.p1)
     {
         printf("tmp_a = %d \n p_1 = %d \n", tmp_a, srcBkwStepPar->sortingPar.smoothLMS.p1);
@@ -72,7 +71,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     int Ni_ = (startIndex + numPositions) == lwe->n ? numPositions : numPositions+1; // differentiate last step
     for (int i=0; i<Ni_; i++)
     {
-        pn[i] = diffTable(columnValue(sample1, startIndex + i), columnValue(sample2, startIndex + i));
+        pn[i] = (columnValue(sample1, startIndex + i) - columnValue(sample2, startIndex + i) + q) % q;
 //    printf("sample1[%d] = %d\n", i, columnValue(sample1, startIndex + i));
 //    printf("sample2[%d] = %d\n", i, columnValue(sample2, startIndex + i));
 //    printf("pn     [%d] = %d\n", i, pn[i]);
@@ -103,14 +102,14 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     /* compute new sample (subtract), write to reserved sample memory area */
     for (int i=0; i<n; i++)
     {
-        newSample->col.a[i] = diffTable(columnValue(sample1, i), columnValue(sample2, i));
+        newSample->col.a[i] = (columnValue(sample1, i) - columnValue(sample2, i) + q) % q;
     }
 
     newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
     int err1 = error(sample1);
     int err2 = error(sample2);
-    newSample->error = (err1 == -1 || err2 == -1) ? -1 : diffTable(err1, err2); /* undefined if either parent error term is undefined */
-    newSample->sumWithError = diffTable(sumWithError(sample1), sumWithError(sample2));
+    newSample->error = (err1 == -1 || err2 == -1) ? -1 : (err1 - err2 + q) % q; /* undefined if either parent error term is undefined */
+    newSample->sumWithError = (sumWithError(sample1) - sumWithError(sample2) + q) % q;
 
     /* discard zero columns (assuming that these are produced by coincidental cancellation due to sample amplification) */
     if (columnIsZero(newSample, n))
@@ -136,7 +135,7 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
         short tmp_a;
         for (int i=srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; i<srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; i++)
         {
-            tmp_a = sumTable(columnValue(sample1, i), columnValue(sample2, i));
+            tmp_a = (columnValue(sample1, i) + columnValue(sample2, i)) % q;
             tmp_a = MIN(tmp_a, q - tmp_a);
             a_norm_squared += tmp_a*tmp_a;
         }
@@ -149,7 +148,7 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     }
 
     /* Check that the +1 position behaves correctly! */
-    short tmp_a = sumTable(columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions), columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions));
+    short tmp_a = (columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions) + columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions)) % q;
     if (tmp_a >= srcBkwStepPar->sortingPar.smoothLMS.p1 && tmp_a <= lwe->q - srcBkwStepPar->sortingPar.smoothLMS.p1)
     {
         printf("tmp_a = %d \n p_1 = %d \n", tmp_a, srcBkwStepPar->sortingPar.smoothLMS.p1);
@@ -164,7 +163,7 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     int Ni_ = (startIndex + numPositions) == lwe->n ? numPositions : numPositions+1; // differentiate last step
     for (int i=0; i<Ni_; i++)
     {
-        pn[i] = sumTable(columnValue(sample1, startIndex + i), columnValue(sample2, startIndex + i));
+        pn[i] = (columnValue(sample1, startIndex + i) + columnValue(sample2, startIndex + i)) % q;
     }
 
     u64 categoryIndex = position_values_2_category_index_smooth_lms_meta(lwe, dstBkwStepPar, pn);
@@ -188,13 +187,13 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     /* compute new sample (add), write to reserved sample memory area */
     for (int i=0; i<n; i++)
     {
-        newSample->col.a[i] = sumTable(columnValue(sample1, i), columnValue(sample2, i));
+        newSample->col.a[i] = (columnValue(sample1, i) + columnValue(sample2, i)) % q;
     }
     newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
     int err1 = error(sample1);
     int err2 = error(sample2);
-    newSample->error = (err1 == -1 || err2 == -1) ? -1 : sumTable(err1, err2); /* undefined if either parent error term is undefined */
-    newSample->sumWithError = sumTable(sumWithError(sample1), sumWithError(sample2));
+    newSample->error = (err1 == -1 || err2 == -1) ? -1 : (err1 + err2) % q; /* undefined if either parent error term is undefined */
+    newSample->sumWithError = (sumWithError(sample1) + sumWithError(sample2)) % q;
 
     /* discard zero columns (assuming that these are produced by coincidental cancellation due to sample amplification) */
     if (columnIsZero(newSample, n))
@@ -587,14 +586,6 @@ int transition_bkw_step_smooth_lms_meta(const char *srcFolderName, const char *d
         return 4; /* could not initialize storage writer */
     }
 
-    /* initialize add and diff tables for faster operation */
-    /* TODO: move to initialization */
-    if (createSumAndDiffTables(lwe.q))
-    {
-        lweDestroy(&lwe);
-        return 6; /* could not create addition and difference tables */
-    }
-
     /* process samples */
     // u64 maxNumSamplesPerCategory = dstCategoryCapacity * EARLY_ABORT_LOAD_LIMIT_PERCENTAGE / SAMPLE_DEPENDENCY_SMEARING + 1;
     u64 maxNumSamplesPerCategory = 1000000000;
@@ -820,7 +811,6 @@ int transition_bkw_step_smooth_lms_meta(const char *srcFolderName, const char *d
     *numSamplesStored = sw.totalNumSamplesAddedToStorageWriter;
     storageWriterFree(&sw); /* flushes automatically */
 
-    freeSumAndDiffTables();
     lweDestroy(&lwe);
 
     return 0;
