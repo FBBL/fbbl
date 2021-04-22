@@ -104,15 +104,18 @@ static lweSample *newEmptySample()
 
 static lweSample *newRandomSample(int n, int q, double sigma, rand_ctx *rnd, short *s)
 {
-    int sum = 0, err;
+    int err;
+    u64 sum = 0; /* Use u64 to be 100 % sure of no overflow */
     lweSample *sample = newEmptySample();
     ASSERT(sample, "Allocation failed!\n");
     ASSERT(s, "Unexpected parameter s!\n");
     for (int i=0; i<n; i++)
     {
         sample->col.a[i] = randomUtilInt(rnd, q);
-        sum = (sum + sample->col.a[i]*s[i]) % q;
+        // sum = (sum + sample->col.a[i]*s[i]) % q;
+        sum = sum + sample->col.a[i]*s[i];
     }
+    sum = sum%q; /* Delay reduction modulo q to after the for loop for speed-up */
     err = (chi(sigma, rnd) + q) % q;
     sample->error = err; // store error only
     sum = (sum + err + q) % q;
@@ -123,14 +126,17 @@ static lweSample *newRandomSample(int n, int q, double sigma, rand_ctx *rnd, sho
 
 static void newInPlaceRandomSample(lweSample *sample, int n, int q, double sigma, rand_ctx *rnd, short *s)
 {
-    int sum = 0, err;
+    int err;
+    u64 sum = 0; /* Use u64 to be 100 % sure of no overflow */
     ASSERT(sample, "Allocation failed!\n");
     ASSERT(s, "Unexpected parameter s!\n");
     for (int i=0; i<n; i++)
     {
         sample->col.a[i] = randomUtilInt(rnd, q);
-        sum = (sum + sample->col.a[i]*s[i]) % q;
+        // sum = (sum + sample->col.a[i]*s[i]) % q;
+        sum = sum + sample->col.a[i]*s[i];
     }
+    sum = sum%q; /* Delay reduction modulo q to after the for loop for speed-up */
     err = (chi(sigma, rnd) + q) % q;
     sample->error = err; // store error only
     sum = (sum + err + q) % q;
