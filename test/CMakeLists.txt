@@ -91,4 +91,3 @@ my_add_test(coded4_fwht_bruteforce_10_101_01 "${TEST_DIR}/test_coded4_fwht_brute
 my_add_test(coded42concat_fwht_bruteforce_10_101_01 "${TEST_DIR}/test_coded42concat_fwht_bruteforce_10_101_01.c" m fbbl "Test passed")
 # test_utils
 my_add_test(utils "${TEST_DIR}/test_utils.c" m fbbl "Test passed")
-

@@ -23,7 +23,6 @@
 #include "storage_reader.h"
 #include "storage_writer.h"
 #include "position_values_2_category_index.h"
-#include "lookup_tables.h"
 #include "config_bkw.h"
 #include <inttypes.h>
 #include <math.h>
@@ -31,11 +30,26 @@
 static u64 numZeroColumns;
 static u64 numZeroColumnsAdd;
 
+/* Adds two numbers in Zq */
+static short addModuloQ(short a, short b, int q) {
+    short c = a + b;
+    if (c >= q)
+        c -= q;
+    return c;
+}
+
+/* Subtracts two numbers in Zq */
+static short subtractModuloQ(short a, short b, int q) {
+    short c = a - b;
+    if (c < 0)
+        c += q;
+    return c;
+}
+
 static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, bkwStepParameters *srcBkwStepPar, FILE *wf)
 {
     int n = lwe->n;
-
-    // printf("We try to subtract the samples\n");
+    int q = lwe->q;
 
     /* perform Unnatural Selection */
     if(srcBkwStepPar->sorting == smoothLMS && srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts)
@@ -44,7 +58,8 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
         short tmp_a;
         for (int i=srcBkwStepPar->startIndex; i<srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; i++)
         {
-            tmp_a = diffTable(columnValue(sample1, i), columnValue(sample2, i));
+            tmp_a = subtractModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
+
             if( (tmp_a <= q_half && tmp_a >= srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts ) || (tmp_a > q_half && tmp_a <= lwe->q-srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts))
                 return 0; // discard the sample
         }
@@ -57,13 +72,13 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     {
         for (int i=0; i<n; i++)
         {
-            newSample->col.a[i] = diffTable(columnValue(sample1, i),columnValue(sample2, i));
+            newSample->col.a[i] = subtractModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
         }
         newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
         int err1 = error(sample1);
         int err2 = error(sample2);
-        newSample->error = (err1 == -1 || err2 == -1) ? -1 : diffTable(err1,err2); /* undefined if either parent error term is undefined */
-        newSample->sumWithError = diffTable(sumWithError(sample1),sumWithError(sample2));
+        newSample->error = (err1 == -1 || err2 == -1) ? -1 : subtractModuloQ(err1, err2, q); /* undefined if either parent error term is undefined */
+        newSample->sumWithError = subtractModuloQ(sumWithError(sample1), sumWithError(sample2), q);
     }
     else
     {
@@ -95,8 +110,7 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
 static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, bkwStepParameters *srcBkwStepPar, FILE *wf)
 {
     int n = lwe->n;
-
-    // printf("We try to subtract the samples\n");
+    int q = lwe->q;
 
     /* perform Unnatural Selection */
     if(srcBkwStepPar->sorting == smoothLMS && srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts)
@@ -105,7 +119,7 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
         short tmp_a;
         for (int i=srcBkwStepPar->startIndex; i<srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; i++)
         {
-            tmp_a = sumTable(columnValue(sample1, i), columnValue(sample2, i));
+            tmp_a = addModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
             if( (tmp_a <= q_half && tmp_a >= srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts ) || (tmp_a > q_half && tmp_a <= lwe->q-srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts))
                 return 0; // discard the sample
         }
@@ -117,13 +131,13 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     {
         for (int i=0; i<n; i++)
         {
-            newSample->col.a[i] = sumTable(columnValue(sample1, i),columnValue(sample2, i));
+            newSample->col.a[i] = addModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
         }
         newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
         int err1 = error(sample1);
         int err2 = error(sample2);
-        newSample->error = (err1 == -1 || err2 == -1) ? -1 : sumTable(err1,err2); /* undefined if either parent error term is undefined */
-        newSample->sumWithError = sumTable(sumWithError(sample1),sumWithError(sample2));
+        newSample->error = (err1 == -1 || err2 == -1) ? -1 : addModuloQ(err1, err2, q); /* undefined if either parent error term is undefined */
+        newSample->sumWithError = addModuloQ(sumWithError(sample1), sumWithError(sample2), q);
     }
     else
     {
@@ -468,14 +482,6 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
         return -1;
     }
 
-    /* initialize add and diff tables for faster operation */
-    /* TODO: move to initialization */
-    if (createSumAndDiffTables(lwe.q))
-    {
-        lweDestroy(&lwe);
-        return 6; /* could not create addition and difference tables */
-    }
-
     /* process samples */
     u64 cat = 0; /* current category index */
     u64 nextPrintLimit = 2;
@@ -704,7 +710,6 @@ int transition_bkw_step_final_smooth_lms_meta(const char *srcFolderName, const c
 
     /* close storage handlers */
     storageReaderFree(&sr);
-    freeSumAndDiffTables();
     fclose(wf);
     lweDestroy(&lwe);
 
