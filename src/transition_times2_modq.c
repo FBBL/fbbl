@@ -26,15 +26,23 @@
 #include "test_functions.h"
 #include <inttypes.h>
 
+short multiply_time2_modq(short a, int q) {
+    a = a << 1;
+    if (a >= q)
+        a -= q;
+    return a;
+}
+
 int sample_times2_modq(lweInstance *lwe, lweSample *sample)
 {
     int n = lwe->n;
     int q = lwe->q;
     for (int i=0; i<n; i++)
-        sample->col.a[i] = (2*sample->col.a[i]) % q;
-    sample->sumWithError = (2*sample->sumWithError) % q;
+        // sample->col.a[i] = (2*sample->col.a[i]) % q;
+        sample->col.a[i] = multiply_time2_modq(sample->col.a[i], q);
+    sample->sumWithError = multiply_time2_modq(sample->sumWithError, q);
     sample->col.hash = bkwColumnComputeHash(sample, n, 0);
-    sample->error = sample->error < 0 ? -1 : (2*error(sample)) % q;
+    sample->error = sample->error < 0 ? -1 : multiply_time2_modq(error(sample), q);
     return 0;
 }
 

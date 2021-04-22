@@ -29,23 +29,43 @@
 
 #define MIN(X, Y)  ((X) < (Y) ? (X) : (Y))
 
+/* Adds two numbers in Zq */
+static short addModuloQ(short a, short b, int q) {
+    short c = a + b;
+    if (c >= q)
+        c -= q;
+    return c;
+}
+
+/* Subtracts two numbers in Zq */
+static short subtractModuloQ(short a, short b, int q) {
+    short c = a - b;
+    if (c < 0)
+        c += q;
+    return c;
+}
+
 static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, bkwStepParameters *srcBkwStepPar, bkwStepParameters *dstBkwStepPar, storageWriter *sw)
 {
     int n = lwe->n;
     int q = lwe->q;
+
+    int startIndexUnnaturalSelection = srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; /* First index for unnatural selection */
+    int endIndexUnnaturalSelection = srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; /* First position where unnatural selection is not applied */
+
 
     /* perform Unnatural Selection */
     if(srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts)
     {
         double a_norm_squared = 0;
         short tmp_a;
-        for (int i=srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; i<srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; i++)
+        for (int i=startIndexUnnaturalSelection; i<endIndexUnnaturalSelection; i++)
         {
-            tmp_a = (columnValue(sample1, i) - columnValue(sample2, i) + q) % q;
+            tmp_a = subtractModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
             tmp_a = MIN(tmp_a, q - tmp_a);
             a_norm_squared += tmp_a*tmp_a;
         }
-        int numSelectionPositions = srcBkwStepPar->startIndex + srcBkwStepPar->numPositions - srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; /* Number of positions to apply unnatural selection on */
+        int numSelectionPositions = endIndexUnnaturalSelection - startIndexUnnaturalSelection; /* Number of positions to apply unnatural selection on */
         double limit = numSelectionPositions * srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts*srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts; /* The threshold below which we accept samples */
         if (a_norm_squared >= limit)
         {
@@ -54,14 +74,12 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     }
 
     /* Check that the +1 position behaves correctly! */
-    short tmp_a = (columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions) - columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions) + q) % q;
+    short tmp_a = subtractModuloQ(columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions), columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions), q);
     if (tmp_a >= srcBkwStepPar->sortingPar.smoothLMS.p1 && tmp_a <= lwe->q - srcBkwStepPar->sortingPar.smoothLMS.p1)
     {
         printf("tmp_a = %d \n p_1 = %d \n", tmp_a, srcBkwStepPar->sortingPar.smoothLMS.p1);
         exit(1);
     }
-
-    // printf("We will not discard the sample\n");
 
     int startIndex = dstBkwStepPar->startIndex;
     int numPositions = dstBkwStepPar->numPositions;
@@ -71,21 +89,15 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     int Ni_ = (startIndex + numPositions) == lwe->n ? numPositions : numPositions+1; // differentiate last step
     for (int i=0; i<Ni_; i++)
     {
-        pn[i] = (columnValue(sample1, startIndex + i) - columnValue(sample2, startIndex + i) + q) % q;
-//    printf("sample1[%d] = %d\n", i, columnValue(sample1, startIndex + i));
-//    printf("sample2[%d] = %d\n", i, columnValue(sample2, startIndex + i));
-//    printf("pn     [%d] = %d\n", i, pn[i]);
+        pn[i] = subtractModuloQ(columnValue(sample1, startIndex + i), columnValue(sample2, startIndex + i), q);
     }
 
     u64 categoryIndex = position_values_2_category_index_smooth_lms_meta(lwe, dstBkwStepPar, pn);
-    // printf("Difference is in category %" PRIu64 " \n", categoryIndex);
     ASSERT(categoryIndex >= 0, "ERROR: invalid category");
 
     /* retrieve memory area for new sample in destination storage */
     int storageWriterStatus = 0;
     lweSample *newSample = storageWriterAddSample(sw, categoryIndex, &storageWriterStatus);
-
-    // printf("Do we get here?\n");
 
     /* if no room, exit */
     if (storageWriterStatus >= 2)
@@ -100,16 +112,32 @@ static u64 subtractSamples(lweInstance *lwe, lweSample *sample1, lweSample *samp
     ASSERT(newSample, "No sample area returned from storage writer");
 
     /* compute new sample (subtract), write to reserved sample memory area */
-    for (int i=0; i<n; i++)
+
+    /* Calculate the values up to start index */
+
+    for (int i=0; i<startIndex; i++)
     {
-        newSample->col.a[i] = (columnValue(sample1, i) - columnValue(sample2, i) + q) % q;
+        newSample->col.a[i] = subtractModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
+    }
+
+    /* These values are already computed to get the new category index */
+    for (int i = 0; i<Ni_; i++)
+    {
+        newSample->col.a[i + startIndex] = pn[i];
+    }
+
+    /* Calculate the final values */
+    for (int i=startIndex + Ni_; i<n; i++)
+    {
+        newSample->col.a[i] = subtractModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
     }
 
     newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
     int err1 = error(sample1);
     int err2 = error(sample2);
-    newSample->error = (err1 == -1 || err2 == -1) ? -1 : (err1 - err2 + q) % q; /* undefined if either parent error term is undefined */
-    newSample->sumWithError = (sumWithError(sample1) - sumWithError(sample2) + q) % q;
+    newSample->error = (err1 == -1 || err2 == -1) ? -1 : subtractModuloQ(err1, err2, q); /* undefined if either parent error term is undefined */
+    newSample->sumWithError = subtractModuloQ(sumWithError(sample1), sumWithError(sample2), q);
+
 
     /* discard zero columns (assuming that these are produced by coincidental cancellation due to sample amplification) */
     if (columnIsZero(newSample, n))
@@ -128,18 +156,21 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     int n = lwe->n;
     int q = lwe->q;
 
+    int startIndexUnnaturalSelection = srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; /* First index for unnatural selection */
+    int endIndexUnnaturalSelection = srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; /* First position where unnatural selection is not applied */
+
     /* perform Unnatural Selection */
     if(srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts)
     {
         double a_norm_squared = 0;
         short tmp_a;
-        for (int i=srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; i<srcBkwStepPar->startIndex + srcBkwStepPar->numPositions; i++)
+        for (int i=startIndexUnnaturalSelection; i<endIndexUnnaturalSelection; i++)
         {
-            tmp_a = (columnValue(sample1, i) + columnValue(sample2, i)) % q;
+            tmp_a = addModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
             tmp_a = MIN(tmp_a, q - tmp_a);
             a_norm_squared += tmp_a*tmp_a;
         }
-        int numSelectionPositions = srcBkwStepPar->startIndex + srcBkwStepPar->numPositions - srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_start_index; /* Number of positions to apply unnatural selection on */
+        int numSelectionPositions = endIndexUnnaturalSelection - startIndexUnnaturalSelection; /* Number of positions to apply unnatural selection on */
         double limit = numSelectionPositions * srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts*srcBkwStepPar->sortingPar.smoothLMS.unnatural_selection_ts; /* The threshold below which we accept samples */
         if (a_norm_squared >= limit)
         {
@@ -148,7 +179,8 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     }
 
     /* Check that the +1 position behaves correctly! */
-    short tmp_a = (columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions) + columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions)) % q;
+    short tmp_a = addModuloQ(columnValue(sample1, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions), columnValue(sample2, srcBkwStepPar->startIndex + srcBkwStepPar->numPositions), q);
+
     if (tmp_a >= srcBkwStepPar->sortingPar.smoothLMS.p1 && tmp_a <= lwe->q - srcBkwStepPar->sortingPar.smoothLMS.p1)
     {
         printf("tmp_a = %d \n p_1 = %d \n", tmp_a, srcBkwStepPar->sortingPar.smoothLMS.p1);
@@ -163,7 +195,8 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     int Ni_ = (startIndex + numPositions) == lwe->n ? numPositions : numPositions+1; // differentiate last step
     for (int i=0; i<Ni_; i++)
     {
-        pn[i] = (columnValue(sample1, startIndex + i) + columnValue(sample2, startIndex + i)) % q;
+        pn[i] = addModuloQ(columnValue(sample1, startIndex + i), columnValue(sample2, startIndex + i), q);
+
     }
 
     u64 categoryIndex = position_values_2_category_index_smooth_lms_meta(lwe, dstBkwStepPar, pn);
@@ -185,15 +218,31 @@ static u64 addSamples(lweInstance *lwe, lweSample *sample1, lweSample *sample2, 
     ASSERT(newSample, "No sample area returned from storage writer");
 
     /* compute new sample (add), write to reserved sample memory area */
-    for (int i=0; i<n; i++)
+
+    /* Calculate the values up to start index */
+    for (int i=0; i<startIndex; i++)
     {
-        newSample->col.a[i] = (columnValue(sample1, i) + columnValue(sample2, i)) % q;
+        newSample->col.a[i] = addModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
     }
+
+    /* These values are already computed */
+    for (int i = 0; i<Ni_; i++)
+    {
+        newSample->col.a[i + startIndex] = pn[i];
+    }
+
+    /* Calculate the final values */
+    for (int i=startIndex + Ni_; i<n; i++)
+    {
+        newSample->col.a[i] = addModuloQ(columnValue(sample1, i), columnValue(sample2, i), q);
+    }
+
     newSample->col.hash = bkwColumnComputeHash(newSample, n, 0 /* startRow */);
     int err1 = error(sample1);
     int err2 = error(sample2);
-    newSample->error = (err1 == -1 || err2 == -1) ? -1 : (err1 + err2) % q; /* undefined if either parent error term is undefined */
-    newSample->sumWithError = (sumWithError(sample1) + sumWithError(sample2)) % q;
+    newSample->error = (err1 == -1 || err2 == -1) ? -1 : addModuloQ(err1, err2, q); /* undefined if either parent error term is undefined */
+    newSample->sumWithError = addModuloQ(sumWithError(sample1), sumWithError(sample2), q);
+
 
     /* discard zero columns (assuming that these are produced by coincidental cancellation due to sample amplification) */
     if (columnIsZero(newSample, n))
@@ -815,3 +864,4 @@ int transition_bkw_step_smooth_lms_meta(const char *srcFolderName, const char *d
 
     return 0;
 }
+
