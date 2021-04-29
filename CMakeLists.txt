@@ -115,7 +115,7 @@ else()
 	# include directory
 	include_directories(fbbl ${OUTPUT_INCLUDE_DIR})
 	# target math library
-	target_link_libraries(fbbl m)
+	target_link_libraries(fbbl m pthread)
 endif()
 
 #set output library location

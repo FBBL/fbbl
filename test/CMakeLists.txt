@@ -51,7 +51,7 @@ my_add_test(smooth_lms_unse_fwht_10_101_005 "${TEST_DIR}/test_smooth_lms_unse_fw
 my_add_test(smooth_lms_fwht_bruteforce_10_101_01 "${TEST_DIR}/test_smooth_lms_fwht_bruteforce_10_101_01.c" m fbbl "Test passed")
 # test_smooth_lms_full_fwht_10_101_01
 my_add_test(smooth_lms_full_fwht_10_101_01 "${TEST_DIR}/test_smooth_lms_full_fwht_10_101_01.c" m fbbl "Test passed")
-# test_smooth_lms3_LF2_fwht_bruteforce_10_101_01
+# test_smooth_lms_LF2_10_101_005
 my_add_test(smooth_lms_LF2_10_101_005 "${TEST_DIR}/test_smooth_lms_LF2_fwht_10_101_005.c" m fbbl "Test passed")
 # test_smooth_lms3_fwht_bruteforce_10_101_01
 my_add_test(smooth_lms3_fwht_bruteforce_10_101_01 "${TEST_DIR}/test_smooth_lms3_fwht_bruteforce_10_101_01.c" m fbbl "Test passed")

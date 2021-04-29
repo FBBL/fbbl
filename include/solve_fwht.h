@@ -36,12 +36,12 @@ int retrieve_full_secret(short *full_secret, u8 binary_secret[][MAX_N], int n_it
 #ifdef USE_SOFT_INFORMATION
 
 int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositions, int fwht_positions, double sigma, time_t start);
-int solve_fwht_search_bruteforce(const char *srcFolder, u8 *binary_solution, short *bf_solution, int zeroPositions, int bruteForcePositions, int fwhtPositions, double sigma, time_t start);
+int solve_fwht_search_bruteforce(char *srcFolder, u8 *binary_solution, short *bf_solution, int zero_positions, int bf_positions, int fwht_positions, double sigma, time_t start, int numThreads);
 
 #else
 
 int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositions, int fwht_positions, time_t start);
-int solve_fwht_search_bruteforce(const char *srcFolder, u8 *binary_solution, short *bf_solution, int zeroPositions, int bruteForcePositions, int fwhtPositions, time_t start);
+int solve_fwht_search_bruteforce(char *srcFolder, u8 *binary_solution, short *bf_solution, int zero_positions, int bf_positions, int fwht_positions, time_t start, int numThreads);
 int solve_fwht_search_hybrid(const char *srcFolder, u8 *binary_solution, int zeroPositions, int bruteForcePositions, int fwht_positions, time_t start);
 
 #endif
