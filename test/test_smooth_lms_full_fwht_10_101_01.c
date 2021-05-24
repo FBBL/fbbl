@@ -315,7 +315,7 @@ int main()
 
     short full_secret[lwe.n];
 
-    retrieve_full_secret(full_secret, binary_solution, MAX_digits, lwe.n, lwe.q);
+    retrieve_full_secret(full_secret, MAX_digits, lwe.n, lwe.q, binary_solution);
 
     printf("\n");
     timeStamp(start);
