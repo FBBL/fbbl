@@ -603,7 +603,7 @@ int solve_fwht_search_hybrid(const char *srcFolder, u8 *binary_solution, int zer
 
 static short power_of_2[14] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192}; // it should be enough
 
-int retrieve_full_secret(short *full_secret, u8 binary_secret[][MAX_N], int n_iterations, int n, int q)
+int retrieve_full_secret(short *full_secret, int n_iterations, int n, int q, u8 binary_secret[][n])
 {
 
     ASSERT(n_iterations>0, "numeber of iterations in retrieve_full_secret cannot be <1");
