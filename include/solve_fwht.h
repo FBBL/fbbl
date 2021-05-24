@@ -31,7 +31,7 @@
 #define MIN_STORAGE_WRITER_CACHE_LOAD_PERCENTAGE_BEFORE_FLUSH 25
 #define READ_BUFFER_CAPACITY_IN_SAMPLES (APPROXIMATE_SIZE_IN_BYTES_OF_READ_BUFFER / LWE_SAMPLE_SIZE_IN_BYTES)
 
-int retrieve_full_secret(short *full_secret, u8 binary_secret[][MAX_N], int n_iterations, int n, int q);
+int retrieve_full_secret(short *full_secret, int n_iterations, int n, int q, u8 binary_secret[][n]);
 
 #ifdef USE_SOFT_INFORMATION
 
