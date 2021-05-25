@@ -335,6 +335,7 @@ typedef struct {
     int min;
     int max;
     int ratio;
+    time_t *start;
 } Params;
 
 static double global_max;
@@ -482,6 +483,7 @@ void *single_work_bruteforce_guess(void *params){
 
 #ifdef PRINT_INTERMEDIATE_SOLUTIONS_BRUTEFORCE
         pthread_mutex_lock(&screen_mutex);
+        timeStamp(start);
         printf("Index found %ld - max %f \n(",max_pos, max);
         for(int j = 0; j<p->bf_positions; j++)
             printf("%d ", BFguess[j]);
@@ -554,6 +556,7 @@ int solve_fwht_search_bruteforce(char *srcFolder, u8 *binary_solution, short *bf
         param[i].min = ((2*ratio+1)/numThreads)*i-ratio;
         param[i].max = ((2*ratio+1)/numThreads)*(i+1)-ratio;
         param[i].ratio = ratio;
+        param[i].start = start;
     }
     param[numThreads-1].max = ratio+1;
 
