@@ -79,7 +79,6 @@ int main()
     ret = addSamplesToSampleFile(originalFolderName, totalNumInitialSamples, start);
     printf ("ret %d\n", ret);
 
-
     u64 minDestinationStorageCapacityInSamples = round((double)(totalNumInitialSamples*4)/3); /* add about 25% storage room for sorted samples */
 
     /* set bkw step parameters */

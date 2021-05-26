@@ -45,7 +45,6 @@
 
 #define NUM_REDUCTION_STEPS 3
 #define BRUTE_FORCE_POSITIONS 2
-#define NUMTHREADS 2
 
 int main()
 {
@@ -223,7 +222,7 @@ int main()
     timeStamp(start);
     printf("Solving phase - Fast Walsh Hadamard Transform from position %d to %d\n", 0, fwht_positions-1);
 
-    ret = solve_fwht_search_bruteforce(srcFolderName, binary_solution, bf_solution, zeropositions, bruteForcePositions, fwht_positions, start, NUMTHREADS);
+    ret = solve_fwht_search_bruteforce(srcFolderName, binary_solution, bf_solution, zeropositions, bruteForcePositions, fwht_positions, start);
     if(ret)
     {
         printf("error %d in solve_fwht_search_hybrid\n", ret);

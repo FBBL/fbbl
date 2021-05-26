@@ -17,6 +17,7 @@
 #ifndef SRC_FILE_BASED_LWE_SOLVE_FWHT_H_
 #define SRC_FILE_BASED_LWE_SOLVE_FWHT_H_
 
+#include "config_compiler.h"
 #include "log_utils.h"
 #include "lwe_instance.h"
 
@@ -36,12 +37,12 @@ int retrieve_full_secret(short *full_secret, int n_iterations, int n, int q, u8 
 #ifdef USE_SOFT_INFORMATION
 
 int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositions, int fwht_positions, double sigma, time_t start);
-int solve_fwht_search_bruteforce(char *srcFolder, u8 *binary_solution, short *bf_solution, int zero_positions, int bf_positions, int fwht_positions, double sigma, time_t start, int numThreads);
+int solve_fwht_search_bruteforce(char *srcFolder, u8 *binary_solution, short *bf_solution, int zero_positions, int bf_positions, int fwht_positions, double sigma, time_t start);
 
 #else
 
 int solve_fwht_search(const char *srcFolder, u8 *binary_solution, int zeroPositions, int fwht_positions, time_t start);
-int solve_fwht_search_bruteforce(char *srcFolder, u8 *binary_solution, short *bf_solution, int zero_positions, int bf_positions, int fwht_positions, time_t start, int numThreads);
+int solve_fwht_search_bruteforce(char *srcFolder, u8 *binary_solution, short *bf_solution, int zero_positions, int bf_positions, int fwht_positions, time_t start);
 int solve_fwht_search_hybrid(const char *srcFolder, u8 *binary_solution, int zeroPositions, int bruteForcePositions, int fwht_positions, time_t start);
 
 #endif

@@ -45,4 +45,7 @@
 #include <stdio.h>
 #endif
 
+#define N_THREADS 8
+#define MAX_NUM_STORAGE_MUTEXES 1000
+
 #endif
